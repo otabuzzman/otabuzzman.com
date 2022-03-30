@@ -1,2 +1,2 @@
-# otabuzzman.com
+# otabuzzman.hub
 A personal website hub.
