@@ -30,7 +30,7 @@ A personal website hub.
   echo 'theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]' >> config.toml
   
   # use module from hub
-  echo >> config.toml <<EOF
+  cat <<-EOF >> config.toml
   
   [module]
     [[module.imports]]
