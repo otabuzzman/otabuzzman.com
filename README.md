@@ -24,6 +24,7 @@ A personal website hub.
   
   # use hugo modules
   hugo mod init dummy
+  # add content hub module
   hugo mod get github.com/otabuzzman/otabuzzman.hub
   
   # initial hugo setup
