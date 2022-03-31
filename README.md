@@ -3,7 +3,7 @@ A personal website hub.
 
 ### Setup
 - install Go from [golang.org](https://golang.org/doc/install)
-- install hugo (extended) from [github.com](https://github.com/gohugoio/hugo/)
+- install hugo from [github.com](https://github.com/gohugoio/hugo/)
 
   ```
   # get hugo repo
