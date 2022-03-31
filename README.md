@@ -26,12 +26,15 @@ A personal website hub.
   hugo mod init dummy
   hugo mod get github.com/otabuzzman/otabuzzman.hub
   
-  # use beautiful ananke theme
-  echo 'theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]' >> config.toml
+  # initial hugo setup
+  cat <<-EOF >config.toml
+  baseURL = 'https://otabuzzman.com/'
+  languageCode = 'en-us'
+  title = "otabuzzman's blog"
+  # use beautiful ananke theme module
+  theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
   
-  # use module from hub
-  cat <<-EOF >> config.toml
-  
+  # use content module from hub
   [module]
     [[module.imports]]
       path = 'github.com/otabuzzman/otabuzzman.hub'
