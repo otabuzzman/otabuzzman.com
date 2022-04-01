@@ -18,7 +18,7 @@ Manual setup on a single Virtual Private Server (VPS) running Ubuntu 18.04. Prov
 
 1. Follow instructions in [deploy.md](https://github.com/otabuzzman/chartacaeli-web/blob/master/deploy.md) section B (apply changes accordingly).
 
-### A. Blog setup
+### C. Blog setup
 
 1. VPS login (from control node)
   ```
