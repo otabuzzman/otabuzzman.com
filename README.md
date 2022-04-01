@@ -6,33 +6,33 @@ A personal website hub.
 - install hugo from [github.com](https://github.com/gohugoio/hugo/)
 
   ```
-  # get hugo repo
+  # get Hugo repo
   cd /usr/lab ; git clone https://github.com/gohugoio/hugo.git ; cd hugo
   
-  # install hugo (in ~/go/bin)
+  # install Hugo (in ~/go/bin)
   go install
   
-  # remove hugo repo (optional)
+  # remove Hugo repo (optional)
   cd .. ; rm -rf hugo
   ```
 
 - init otabuzzman.com
 
   ```
-  # init otabuzzman.com
+  # create otabuzzman.com
   hugo init site otabuzzman.com
   
-  # use hugo modules
+  # use Hugo modules
   hugo mod init dummy
   # add content hub module
   hugo mod get github.com/otabuzzman/otabuzzman.hub
   
-  # initial hugo setup
+  # initial Hugo setup
   cat <<-EOF >config.toml
   baseURL = 'https://otabuzzman.com/'
   languageCode = 'en-us'
   title = "otabuzzman's blog"
-  # use beautiful ananke theme module
+  # use Ananke theme module
   theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
   
   # use content module from hub
