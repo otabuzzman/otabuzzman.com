@@ -48,21 +48,27 @@ Manual setup on a single Virtual Private Server (VPS) running Ubuntu 18.04. Prov
   sudo tar -C /usr/local -xzf $tgz
 
   echo "export PATH=/usr/local/go/bin:$PATH" >>~/.profile
+  # logoff/ login to take effect
   ```
 
-3. Install site building framework
+3. Install Hugo
   ```
   # get hugo
   cd ~/lab ; git clone https://github.com/gohugoio/hugo.git
 
   # install hugo
-  cd hugo ; go install
+  ( cd hugo ; go install )
+
+  echo "export PATH=~/go/bin:$PATH" >>~/.profile
+  # logoff/ login to take effect
   ```
 
-3. Configure site building framework
+3. Configure Hugo
   ```
   # create otabuzzman.com
-  hugo init site otabuzzman.com
+  cd ~/lab
+  site=otabuzzman.com
+  hugo new site $site ; cd $site
 
   # use hugo modules
   hugo mod init dummy
@@ -79,6 +85,9 @@ Manual setup on a single Virtual Private Server (VPS) running Ubuntu 18.04. Prov
   # use beautiful Ananke theme module
   theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
 
+  # publish to Apache web server
+  publishDir = /opt/otabuzzman/www
+
   # use content module from hub
   [module]
     [[module.imports]]
@@ -91,4 +100,15 @@ Manual setup on a single Virtual Private Server (VPS) running Ubuntu 18.04. Prov
         source = 'modules/static'
         target = 'static'
   EOF
+  ```
+
+4. Deploy content hub
+  ```
+  sudo usermod -aG oman leaf
+  # logoff/ login to take effect
+
+  cd ~/lab/otabuzzman.com
+  hugo --noTimes # chtimes error workaround
+
+  # open https://otabuzzman.com
   ```

@@ -20,7 +20,7 @@ A personal website hub.
 
   ```
   # create otabuzzman.com
-  hugo init site otabuzzman.com
+  hugo new site otabuzzman.com
   
   # use Hugo modules
   hugo mod init dummy
