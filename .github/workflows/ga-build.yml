@@ -24,10 +24,9 @@ jobs:
             User ${{ secrets.SSH_USER }}
             IdentityFile ~/.ssh/ssh_private_key
           EOF
-          echo "$SSH_PUBLIC_KEY" >~/.ssh/authorized_keys
 
       - name: update known_hosts
         run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: who am i
-        run: ssh ${{ secrets.SSH_HOST }} whoami
+        run: echo ${{ secrets.SSH_HOST }} whoami
