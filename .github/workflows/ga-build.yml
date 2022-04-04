@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+
+  # run this workflow manually
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure SSH
+        run: |
+          mkdir --parents --mode=0700 ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" >~/.ssh/ssh_private_key
+          chmod 0600 ~/.ssh/ssh_private_key
+          cat >>~/.ssh/config <<-EOF
+          Host ${{ secrets.SSH_HOST }}
+            HostName ${{ secrets.SSH_HOST }}
+            Port ${{ secrets.SSH_PORT }}
+            User ${{ secrets.SSH_USER }}
+            IdentityFile ~/.ssh/ssh_private_key
+          EOF
+
+      - name: update known_hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} >> ~/.ssh/known_hosts
+
+      - name: who am i
+        run: ssh ${{ secrets.SSH_HOST }} whoami
