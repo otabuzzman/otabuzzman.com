@@ -18,7 +18,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" >~/.ssh/ssh_private_key
           chmod 0600 ~/.ssh/ssh_private_key
           cat >>~/.ssh/config <<-EOF
-          Host ${{ secrets.SSH_HOST }}
+          Host build
             HostName ${{ secrets.SSH_HOST }}
             Port ${{ secrets.SSH_PORT }}
             User ${{ secrets.SSH_USER }}
@@ -29,4 +29,4 @@ jobs:
         run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: who am i
-        run: echo ${{ secrets.SSH_HOST }} whoami
+        run: ssh build whoami
