@@ -1,4 +1,4 @@
-name: Build
+name: GA Build
 
 on:
   push:
@@ -28,5 +28,5 @@ jobs:
       - name: update known_hosts
         run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: who am i
-        run: ssh ${{ secrets.SSH_HOST }} ls /opt/otabuzzman/www
+      - name: eventually build site
+        run: ssh ${{ secrets.SSH_HOST }} hugo --noTimes
