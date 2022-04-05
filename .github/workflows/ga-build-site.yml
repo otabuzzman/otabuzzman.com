@@ -18,9 +18,10 @@ jobs:
       site_user: leaf
 
     steps:
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: configure SSH
         run: |
