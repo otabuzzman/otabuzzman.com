@@ -35,4 +35,4 @@ jobs:
         run: ssh-keyscan -H -p $site_port $site_host >> ~/.ssh/known_hosts
 
       - name: eventually build site
-        run: ssh $site_host 'bash -lc "cd lab/$site_fqdn ; hugo --noTimes"'
+        run: ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo --noTimes"'
