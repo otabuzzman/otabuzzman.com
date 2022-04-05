@@ -1,32 +1,38 @@
-name: GA Build
+name: GA Build Site
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [ published ]
 
   # run this workflow manually
   workflow_dispatch:
 
 jobs:
-  build:
+  ga-build-site:
     runs-on: ubuntu-latest
+
+    env:
+      site_host: 38.242.249.164
+      site_fqdn: otabuzzman.com
+      site_port: 3110
+      site_user: leaf
 
     steps:
       - name: configure SSH
         run: |
           mkdir --parents --mode=0700 ~/.ssh/
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/otabuzzman.com
-          chmod 0600 ~/.ssh/otabuzzman.com
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/$site_fqdn
+          chmod 0600 ~/.ssh/$site_fqdn
           cat >>~/.ssh/config <<-EOF
-          Host ${{ secrets.SSH_HOST }}
-            HostName ${{ secrets.SSH_HOST }}
-            Port ${{ secrets.SSH_PORT }}
-            User ${{ secrets.SSH_USER }}
-            IdentityFile ~/.ssh/otabuzzman.com
+          Host $site_host
+            HostName $site_host
+            Port $site_port
+            User $site_user
+            IdentityFile ~/.ssh/$site_fqdn
           EOF
 
       - name: update known_hosts
-        run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H -p $site_port $site_host >> ~/.ssh/known_hosts
 
       - name: eventually build site
-        run: ssh ${{ secrets.SSH_HOST }} 'bash -lc "cd lab/otabuzzman.com ; hugo --noTimes"'
+        run: ssh $site_host 'bash -lc "cd lab/$site_fqdn ; hugo --noTimes"'
