@@ -18,6 +18,10 @@ jobs:
       site_user: leaf
 
     steps:
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
       - name: configure SSH
         run: |
           mkdir --parents --mode=0700 ~/.ssh/
@@ -35,4 +39,6 @@ jobs:
         run: ssh-keyscan -H -p $site_port $site_host >> ~/.ssh/known_hosts
 
       - name: eventually build site
-        run: ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo --noTimes"'
+        run: |
+          scp -P $site_port config.toml $site_user@$site_fqdn:~/lab/$site_fqdn
+          ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo --noTimes"'

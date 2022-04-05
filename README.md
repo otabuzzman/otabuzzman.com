@@ -1,7 +1,7 @@
 # otabuzzman's blog
 A personal website hub.
 
-### Setup
+### Manual setup
 - install Go from [golang.org](https://golang.org/doc/install)
 - install hugo from [github.com](https://github.com/gohugoio/hugo/)
 
@@ -36,16 +36,15 @@ A personal website hub.
   theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
   
   # use content module from hub
-  [module]
-    [[module.imports]]
-      path = 'github.com/otabuzzman/otabuzzman.hub'
-      disabled = false
-      [[module.imports.mounts]]
-        source = 'modules/content'
-        target = 'content'
-      [[module.imports.mounts]]
-        source = 'modules/static'
-        target = 'static'
+  [module.imports]
+    path = 'github.com/otabuzzman/otabuzzman.hub'
+    disabled = false
+    [[module.imports.mounts]]
+      source = 'modules/content'
+      target = 'content'
+    [[module.imports.mounts]]
+      source = 'modules/static'
+      target = 'static'
   EOF
   
   # run hugo server
