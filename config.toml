@@ -1,8 +1,12 @@
 baseURL = 'https://otabuzzman.com/'
 languageCode = 'en-us'
 title = "otabuzzman's blog"
+
 # use beautiful ananke theme module
 theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
+
+# publish to Apache web server
+publishDir = "/opt/otabuzzman/www"
 
 # use content module
 [module.imports]
@@ -21,6 +25,3 @@ theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
 [[params.ananke_socials]]
   name = "github"
   url = "https://github.com/otabuzzman"
-
-# Apache web server document root
-publishDir = "/opt/otabuzzman/www"
