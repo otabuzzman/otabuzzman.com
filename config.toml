@@ -4,11 +4,9 @@ title = "otabuzzman's blog"
 # use beautiful ananke theme module
 theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
 
-publishDir = "/opt/otabuzzman/www"
-
-# use content module from hub
+# use content module
 [module.imports]
-  path = 'github.com/otabuzzman/otabuzzman.hub'
+  path = 'github.com/otabuzzman/otabuzzman.com'
   disabled = false
   [[module.imports.mounts]]
     source = 'modules/content'
