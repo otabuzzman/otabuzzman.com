@@ -28,7 +28,7 @@ A personal website.
   hugo mod get github.com/otabuzzman/otabuzzman.com
   
   # initial Hugo setup
-  wget -q github.com/otabuzzman/otabuzzman.com/config.toml
+  curl -o config.toml https://raw.githubusercontent.com/otabuzzman/otabuzzman.com/main/config.toml
   
   # run hugo server
   hugo server -D
@@ -110,7 +110,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   hugo mod get github.com/otabuzzman/otabuzzman.com
 
   # initial hugo setup
-  wget -q github.com/otabuzzman/otabuzzman.com/config.toml
+  curl -o config.toml https://raw.githubusercontent.com/otabuzzman/otabuzzman.com/main/config.toml
   ```
 
 4. Deploy content
@@ -119,10 +119,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   # logoff/ login to take effect
 
   cd ~/lab/otabuzzman.com
-  hugo \
-    --publishDir /opt/otabuzzman/www
-    --noTimes # chtimes error workaround
+  hugo --noTimes # chtimes error workaround
 
   # open https://otabuzzman.com
   ```
-

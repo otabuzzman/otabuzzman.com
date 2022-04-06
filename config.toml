@@ -21,3 +21,6 @@ theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
 [[params.ananke_socials]]
   name = "github"
   url = "https://github.com/otabuzzman"
+
+# Apache web server document root
+publishDir = "/opt/otabuzzman/www"
