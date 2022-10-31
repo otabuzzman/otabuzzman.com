@@ -37,7 +37,7 @@ A personal website.
   ```
 
 ### VPS setup
-Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo.de](https://contabo.de/). VPS access details received by mail. Domain registrar for [chartacaeli.org](https://www.whois.com/whois/chartacaeli.org) is [ionos.de](https://www.ionos.de/). Setup assumes a control node with SSH access to VPS.
+Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo.de](https://contabo.de/). VPS access details received by mail. Domain registrar for [otabuzzman.com](https://www.whois.com/whois/otabuzzman.com) is [ionos.de](https://www.ionos.de/). Setup assumes a control node with SSH access to VPS.
 
 * [A. Basic setup](#A-Basic-setup) - Essentially SSH setup and firewall.<br>
 * [B. Web server setup](#B-Web-server-setup) - Apache web server with Let's Encrypt certificate.
@@ -120,6 +120,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
   cd ~/lab/otabuzzman.com
   hugo --noTimes # chtimes error workaround
-
-  # open https://otabuzzman.com
   ```
+
+5. Open [otabuzzman.com](https://otabuzzman.com)
+
