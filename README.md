@@ -3,18 +3,7 @@ A personal website.
 
 ### Local setup
 - install Go from [golang.org](https://golang.org/doc/install)
-- install hugo from [github.com](https://github.com/gohugoio/hugo/)
-
-  ```
-  # get Hugo repo
-  cd /usr/lab ; git clone https://github.com/gohugoio/hugo.git ; cd hugo
-  
-  # install Hugo (in ~/go/bin)
-  go install
-  
-  # remove Hugo repo (optional)
-  cd .. ; rm -rf hugo
-  ```
+- install hugo from [github.com](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
 
 - init otabuzzman.com
 
@@ -84,13 +73,11 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   # logoff/ login to take effect
   ```
 
-3. Install Hugo
+3. Install Hugo extended
   ```
-  # get hugo
-  cd ~/lab ; git clone https://github.com/gohugoio/hugo.git
-
-  # install hugo
-  ( cd hugo ; go install )
+  # get binary from https://github.com/gohugoio/hugo/releases/
+  # and unpack in ~/go/bin
+  chmod 775 ~/go/bin/hugo
 
   echo "export PATH=~/go/bin:$PATH" >>~/.profile
   # logoff/ login to take effect
