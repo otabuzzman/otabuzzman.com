@@ -20,8 +20,11 @@ publishDir = "/opt/otabuzzman/www"
     target = 'static'
 
 [[params.ananke_socials]]
+  name = "github"
+  url = "https://github.com/otabuzzman"
+[[params.ananke_socials]]
   name = "twitter"
   url = "https://twitter.com/otabuzzman"
 [[params.ananke_socials]]
-  name = "github"
-  url = "https://github.com/otabuzzman"
+  name = "linkedin"
+  url = "https://www.linkedin.com/in/juergenschuck/"
