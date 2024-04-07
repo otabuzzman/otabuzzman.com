@@ -16,23 +16,29 @@ A personal website.
   # initiate hugo modules
   hugo mod get github.com/otabuzzman/otabuzzman.com
   
+  PUBLISHDIR=/opt/otabuzzman/www
+  
   # create initial config.toml
   cat >config.toml <<-EOF
   baseURL = 'https://otabuzzman.com/'
   languageCode = 'en-us'
   title = "otabuzzman's blog"
   
-  theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
+  # use the beautiful Ananke theme
+  theme = "ananke"
+  
+  # publish to Apache web server
+  publishDir = "$PUBLISHDIR"
   
   # use content from repository
   [module.imports]
     path = 'github.com/otabuzzman/otabuzzman.com'
     disabled = false
     [[module.imports.mounts]]
-      source = 'modules/content'
+      source = 'content'
       target = 'content'
     [[module.imports.mounts]]
-      source = 'modules/static'
+      source = 'static'
       target = 'static'
   
   [[params.ananke_socials]]
@@ -56,8 +62,8 @@ A personal website.
 
 - Open [http://localhost:1313](http://localhost:1313)
 
-- [hugo documentation](https://gohugo.io/documentation/) ([quick start](https://gohugo.io/getting-started/quick-start/))
-- [ananke documentation](https://github.com/theNewDynamic/gohugo-theme-ananke)
+- Hugo site generator [documentation](https://gohugo.io/documentation/) ([quick start](https://gohugo.io/getting-started/quick-start/))
+- Ananke theme for Hugo [documentation](https://github.com/theNewDynamic/gohugo-theme-ananke)
 
 ### VPS setup
 Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo.de](https://contabo.de/). VPS access details received by mail. Domain registrar for [otabuzzman.com](https://www.whois.com/whois/otabuzzman.com) is [ionos.de](https://www.ionos.de/). Setup assumes a control node with SSH access to VPS.
@@ -128,7 +134,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   ```
   hugo && rsync -avz --omit-dir-times --no-perms --delete \
     -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
-    public/ leaf@otabuzzman.com:/opt/otabuzzman/www
+    $PUBLISHDIR leaf@otabuzzman.com:$PUBLISHDIR
   ```
 
 2. On otabuzzman.com
