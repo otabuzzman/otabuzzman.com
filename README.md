@@ -9,30 +9,31 @@ A personal website.
 
   ```
   # create otabuzzman.com
-  hugo new site otabuzzman.com
+  WEBSITE=otabuzzman.com
+  hugo new site $WEBSITE
   
   # use Hugo with modules
-  hugo mod init otabuzzman.com
+  hugo mod init $WEBSITE
   # initiate hugo modules
-  hugo mod get github.com/otabuzzman/otabuzzman.com
+  hugo mod get github.com/otabuzzman/$WEBSITE
   
   PUBLISHDIR=/opt/otabuzzman/www
   
   # create initial config.toml
-  cat >config.toml <<-EOF
-  baseURL = 'https://otabuzzman.com/'
+  cat >${WEBSITE}/config.toml <<-EOF
+  baseURL = 'https://$WEBSITE/'
   languageCode = 'en-us'
   title = "otabuzzman's blog"
   
   # use the beautiful Ananke theme
-  theme = "ananke"
+  theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
   
   # publish to Apache web server
   publishDir = "$PUBLISHDIR"
   
   # use content from repository
   [module.imports]
-    path = 'github.com/otabuzzman/otabuzzman.com'
+    path = 'github.com/otabuzzman/$WEBSITE'
     disabled = false
     [[module.imports.mounts]]
       source = 'content'
