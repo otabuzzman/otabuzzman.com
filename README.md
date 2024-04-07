@@ -142,14 +142,13 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   - Check [http://localhost:1313](http://localhost:1313)
 
 2. On otabuzzman.com from control node
-  - Publish in local folder.
-    ```
-    http --noTimes
-    ```
-  - Deploy to otabuzzman.com
+  - Commit changes of `content/` and `static/` folders to GitHub.
+  - Publish on otabuzzman.com
     ```
     PUBLISHDIR=opt/otabuzzman/www
-    hugo && rsync -avz --omit-dir-times --no-perms --delete \
+    hugo mod get -u
+    hugo --noTimes
+    rsync -avz --omit-dir-times --no-perms --delete \
       -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
       $PUBLISHDIR leaf@otabuzzman.com:/$PUBLISHDIR
     ```
@@ -160,7 +159,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
     ```
     ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
     ```
-  - Deploy on Apache web server
+  - Publish on Apache web server
     ```
     cd ~/lab/otabuzzman.com
     hugo mod get -u
