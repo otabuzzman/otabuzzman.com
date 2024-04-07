@@ -85,11 +85,13 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 ### C. Blog setup
 
 1. VPS login (from control node)
+
   ```
   ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
   ```
 
 2. Install prerequisites
+
   ```
   [ -d ~/lab ] || mkdir ~/lab
 
@@ -116,6 +118,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   ```
 
 3. Install Hugo extended
+
   ```
   # get binary from https://github.com/gohugoio/hugo/releases/
   # and unpack in ~/go/bin
@@ -135,36 +138,13 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 1. On control node
 
   - Update or add files to `content/` and `static/` folders.
-  - Publish in local server.
+  - Publish on local server.
+
     ```
     http server -D
     ```
   - Check [http://localhost:1313](http://localhost:1313)
 
-2. On otabuzzman.com from control node
+2. Using GitHub action
   - Commit changes of `content/` and `static/` folders to GitHub.
-  - Publish on otabuzzman.com
-    ```
-    PUBLISHDIR=opt/otabuzzman/www
-    hugo mod get -u
-    hugo --noTimes
-    rsync -avz --omit-dir-times --no-perms --delete \
-      -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
-      $PUBLISHDIR leaf@otabuzzman.com:/$PUBLISHDIR
-    ```
-
-3. On otabuzzman.com
-  - Commit changes of `content/` and `static/` folders to GitHub.
-  - VPS login (from control node)
-    ```
-    ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
-    ```
-  - Publish on Apache web server
-    ```
-    cd ~/lab/otabuzzman.com
-    hugo mod get -u
-    hugo --noTimes # chtimes error workaround
-    ```
-
-4. Using GitHub action
-  - Run action `GA Build Site` manually
+  - Run action [GA Build Site}(https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) manually
