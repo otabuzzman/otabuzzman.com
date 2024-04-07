@@ -3,7 +3,7 @@ date: 2022-05-09 19:35:12+02:00
 description: "Dinosaur Tales"
 featured_image: "/images/run-x11-clients-on-tablet.jpg"
 tags: ["x11", "tablet", "ipad", "ios"]
-title: "Run X13 Clients on Tablet"
+title: "Run X14 Clients on Tablet"
 ---
 
 A friend of mine recently told me about porting a VNC server to a microcontroller. We joked about it and I capped it off by saying I've been thinking about porting X11 to iOS. I ended up using VNC instead, but my buddy said there would probably already be an X11 port for iOS - and he was right. Mocha X11 is an X server implementation for tablets. It is available in the App and Play Stores. There are lite versions with a session interval of five minutes. Too short for serious work, but enough to get a taste of what it's like to see decades-old software meet modern devices.

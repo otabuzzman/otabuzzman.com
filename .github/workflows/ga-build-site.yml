@@ -42,5 +42,4 @@ jobs:
 
       - name: eventually build site
         run: |
-          scp -P $site_port config.toml $site_host:~/lab/$site_fqdn
           ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo --noTimes"'
