@@ -129,6 +129,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   ```
 
 3. Configure Hugo
+
   Same as for [Local setup](#Local-setup), section _Init otabuzzman.com_.
 
 4. Open [otabuzzman.com](https://otabuzzman.com)
@@ -147,4 +148,4 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
 2. Using GitHub action
   - Commit changes of `content/` and `static/` folders to GitHub.
-  - Run action [GA Build Site}(https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) manually
+  - Run action [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) manually
