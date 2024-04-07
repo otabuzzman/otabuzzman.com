@@ -11,6 +11,7 @@ A personal website.
   # create otabuzzman.com
   WEBSITE=otabuzzman.com
   hugo new site $WEBSITE
+  cd $WEBSITE
   
   # use Hugo with modules
   hugo mod init $WEBSITE
@@ -20,7 +21,7 @@ A personal website.
   PUBLISHDIR=/opt/otabuzzman/www
   
   # create initial config.toml
-  cat >${WEBSITE}/config.toml <<-EOF
+  cat >config.toml <<-EOF
   baseURL = 'https://$WEBSITE/'
   languageCode = 'en-us'
   title = "otabuzzman's blog"
