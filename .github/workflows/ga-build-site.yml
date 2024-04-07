@@ -42,4 +42,4 @@ jobs:
 
       - name: eventually build site
         run: |
-          ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo --noTimes"'
+          ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo mod get -u ; hugo --noTimes"'
