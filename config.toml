@@ -13,10 +13,10 @@ publishDir = "/opt/otabuzzman/www"
   path = 'github.com/otabuzzman/otabuzzman.com'
   disabled = false
   [[module.imports.mounts]]
-    source = 'modules/content'
+    source = 'content'
     target = 'content'
   [[module.imports.mounts]]
-    source = 'modules/static'
+    source = 'static'
     target = 'static'
 
 [[params.ananke_socials]]
