@@ -147,5 +147,5 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   - Check [http://localhost:1313](http://localhost:1313)
 
 2. Using GitHub action
-  - Commit changes of `content/` and `static/` folders to GitHub.
+  - Commit changes in `content/` and `static/` folders to GitHub.
   - Run action [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) manually
