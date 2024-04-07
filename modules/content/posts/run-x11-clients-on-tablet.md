@@ -1,7 +1,7 @@
 ---
 date: 2022-05-09 19:35:12+02:00
 description: "Dinosaur Tales"
-featured_image: "/images/run-x11-clients-on-tablet.png"
+featured_image: "/images/run-x11-clients-on-tablet.jpg"
 tags: ["x11", "tablet", "ipad", "ios"]
 title: "Run X11 Clients on Tablet"
 ---
@@ -12,7 +12,7 @@ My configuration is for an AWS EC2 instance to run my X11 app. I use an AMI with
 
 On my iPad I use the RealVNC client to connect to the server. Although not essential, I also set up a windows manager. The AWS repository didn't provide any, but Cygwin (the swiss army knife for Linos guys on Winos) so I grabbed Cygwin's twm and set it up on my Winos box.
 
-![Network overview](/images/network-overview-2nd-draft.png)
+![Network overview](/images/network-overview-2nd-draft.jpg)
 
 The new configuration would replace (the blue) Xorg and VNC stuff with the (red) Mocha X11 server for iOS installed on my iPad. It turned out that Mocha provides some basic window manager functionality, making twm obsolete.
 
