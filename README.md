@@ -132,22 +132,40 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
 ### D. Deploy content
 
-1. From control node
-  ```
-  hugo && rsync -avz --omit-dir-times --no-perms --delete \
-    -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
-    $PUBLISHDIR leaf@otabuzzman.com:$PUBLISHDIR
-  ```
+1. On control node
 
-2. On otabuzzman.com
+  - Update or add files to `content/` and `static/` folders.
+  - Publish in local server.
+    ```
+    http server -D
+    ```
+  - Check [http://localhost:1313](http://localhost:1313)
+
+2. On otabuzzman.com from control node
+  - Publish in local folder.
+    ```
+    http --noTimes
+    ```
+  - Deploy to otabuzzman.com
+    ```
+    PUBLISHDIR=opt/otabuzzman/www
+    hugo && rsync -avz --omit-dir-times --no-perms --delete \
+      -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
+      $PUBLISHDIR leaf@otabuzzman.com:/$PUBLISHDIR
+    ```
+
+3. On otabuzzman.com
+  - Commit changes of `content/` and `static/` folders to GitHub.
   - VPS login (from control node)
-  ```
-  ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
-  ```
+    ```
+    ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
+    ```
   - Deploy on Apache web server
-  ```
-  cd ~/lab/otabuzzman.com
-  hugo --noTimes # chtimes error workaround
-  ```
+    ```
+    cd ~/lab/otabuzzman.com
+    hugo mod get -u
+    hugo --noTimes # chtimes error workaround
+    ```
 
-3. Using GitHub action
+4. Using GitHub action
+  - Run action `GA Build Site` manually
