@@ -3,7 +3,7 @@ languageCode = 'en-us'
 title = "otabuzzman's blog"
 
 # use the beautiful Ananke theme
-theme = "ananke"
+theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
 
 # publish to Apache web server
 publishDir = "/opt/otabuzzman/www"

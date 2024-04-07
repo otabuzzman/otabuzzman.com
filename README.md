@@ -138,10 +138,12 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   ```
 
 2. On otabuzzman.com
+  - VPS login (from control node)
   ```
-  sudo usermod -aG oman leaf
-  # logoff/ login to take effect
-
+  ssh -i ~/.ssh/otabuzzman.com leaf@otabuzzman.com -p 3110
+  ```
+  - Deploy on Apache web server
+  ```
   cd ~/lab/otabuzzman.com
   hugo --noTimes # chtimes error workaround
   ```
