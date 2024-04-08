@@ -49,7 +49,7 @@ rsync -avz --omit-dir-times --no-perms --delete  \
 
 - Check [https://otabuzzman.com](https://otabuzzman.com)
 
---
+---
 
 ### VPS setup for otabuzzman.com
 Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo.de](https://contabo.de/). VPS access details received by mail. Domain registrar for [otabuzzman.com](https://www.whois.com/whois/otabuzzman.com) is [ionos.de](https://www.ionos.de/). Setup assumes a control node with SSH access to VPS.
