@@ -1,13 +1,19 @@
 # otabuzzman's blog
-A personal website.
+A personal website. The idea is to use the repository as a kind of content hub. Posts to be published can be written on any device and then submitted to the repo, which in turn updates the website. The latter is done through a workflow in GitHub Actions that is triggered manually by content marked as a new release.
 
-### Local setup
+The site is [otabuzzman.com](https://otabuzzman.com). [Hugo static site generator](https://gohugo.io/) is set up to fetch content from the repository and publish it to the web server. Hugo also uses the [Ananke](https://github.com/theNewDynamic/gohugo-theme-ananke) theme.
+
+### Publish content
+
+Add text and images directly to the repository and run the [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) workflow (either manually or by issuing a release publish event).
+
+Clone the repo and set up a local Hugo configuration. Add content and create a website with local Hugo. Then push content to the repository and run the workflow.
+
 - Install Go from [golang.org](https://golang.org/doc/install)
-- Install hugo from [github.com](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
+- Install hugo (extended) from [github.com](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
+- Set up local Hugo configuration
 
-- Init otabuzzman.com
-
-  ```
+  ```bash
   # create otabuzzman.com
   WEBSITE=otabuzzman.com
   hugo new site $WEBSITE
@@ -15,64 +21,42 @@ A personal website.
   
   # use Hugo with modules
   hugo mod init $WEBSITE
+  
   # initiate hugo modules
   hugo mod get github.com/otabuzzman/$WEBSITE
   
-  PUBLISHDIR=/opt/otabuzzman/www
+  # set up local hugo configuration
+  wget https://raw.githubusercontent.com/otabuzzman/otabuzzman.com/main/config.toml
   
-  # create initial config.toml
-  cat >config.toml <<-EOF
-  baseURL = 'https://$WEBSITE/'
-  languageCode = 'en-us'
-  title = "otabuzzman's blog"
-  
-  # use the beautiful Ananke theme
-  theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
-  
-  # publish to Apache web server
-  publishDir = "$PUBLISHDIR"
-  
-  # use content from repository
-  [module.imports]
-    path = 'github.com/otabuzzman/$WEBSITE'
-    disabled = false
-    [[module.imports.mounts]]
-      source = 'content'
-      target = 'content'
-    [[module.imports.mounts]]
-      source = 'static'
-      target = 'static'
-  
-  [[params.ananke_socials]]
-    name = "github"
-    url = "https://github.com/otabuzzman"
-  [[params.ananke_socials]]
-    name = "twitter"
-    url = "https://twitter.com/otabuzzman"
-  [[params.ananke_socials]]
-    name = "linkedin"
-    url = "https://www.linkedin.com/in/juergenschuck/"
-  EOF
-  ```
-
-- Run local hugo server
-
-  ```
-  # run hugo server
+  # run a local Hugo server that continuously publishes content changes on http://localhost:1313
   hugo server -D
+  
+  # update content,
+  # push to repo, and
+  # run workflow.
   ```
 
-- Open [http://localhost:1313](http://localhost:1313)
+- Check [http://localhost:1313](http://localhost:1313)
 
-- Hugo site generator [documentation](https://gohugo.io/documentation/) ([quick start](https://gohugo.io/getting-started/quick-start/))
-- Ananke theme for Hugo [documentation](https://github.com/theNewDynamic/gohugo-theme-ananke)
+Copy Hugo's local publishing directory directly to the site.
 
-### VPS setup
+```bash
+PUBLISHDIR=opt/otabuzzman/www
+rsync -avz --omit-dir-times --no-perms --delete  \
+  -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
+  $PUBLISHDIR/ leaf@otabuzzman.com:/$PUBLISHDIR
+```
+
+- Check [https://otabuzzman.com](https://otabuzzman.com)
+
+--
+
+### VPS setup for otabuzzman.com
 Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo.de](https://contabo.de/). VPS access details received by mail. Domain registrar for [otabuzzman.com](https://www.whois.com/whois/otabuzzman.com) is [ionos.de](https://www.ionos.de/). Setup assumes a control node with SSH access to VPS.
 
 * [A. Basic setup](#A-Basic-setup) - Essentially SSH setup and firewall.<br>
 * [B. Web server setup](#B-Web-server-setup) - Apache web server with Let's Encrypt certificate.
-* [C. Blog setup](#C-Blog-setup) - Hugo site building framework.
+* [C. Site setup](#C-Site-setup) - Hugo static site generator.
 
 ### A. Basic setup
 
@@ -82,7 +66,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
 1. Follow instructions in [deploy.md](https://github.com/otabuzzman/chartacaeli-web/blob/master/deploy.md#B-Web-server-setup) section B (apply changes accordingly).
 
-### C. Blog setup
+### C. Site setup
 
 1. VPS login (from control node)
 
@@ -130,22 +114,6 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
 3. Configure Hugo
 
-  Same as for [Local setup](#Local-setup), section _Init otabuzzman.com_.
+  As described in [Publish content](#Publish-content), bullet point _Set up local Hugo configuration_.
 
 4. Open [otabuzzman.com](https://otabuzzman.com)
-
-### D. Deploy content
-
-1. On control node
-
-  - Update or add files to `content/` and `static/` folders.
-  - Publish on local server.
-
-    ```
-    http server -D
-    ```
-  - Check [http://localhost:1313](http://localhost:1313)
-
-2. Using GitHub action
-  - Commit changes in `content/` and `static/` folders to GitHub.
-  - Run action [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) manually
