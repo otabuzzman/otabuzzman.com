@@ -1,0 +1,196 @@
+<HTML><HEAD><META HTTP-EQUIV="Content-Type" CONTENT="text/html;CHARSET=iso-8859-1"><TITLE> REPORT
+ : Plan-9-Cluster 
+ </TITLE></HEAD><BODY><P><A HREF="pic01.jpg"><IMG SRC="pic01.jpg" ALT="minpic01.jpg"></A><P><H3>Betrieb eines Rechnerverbundes unter Plan 9 
+</H3>
+<H1>Von draußen 
+</H1>
+<H3>Jürgen Schuck, Michael Ziegler 
+</H3>
+<B>`Plan 9 - From outer space' lautet der Name eines Science-fiction-Films, der nach Meinung sachverständiger Kritiker zu den schlechtesten seiner Art zählt - für Liebhaber ist er Kult. Plan 9 heißt aber auch ein Betriebssystem aus den legendären (und ehemaligen) Bell Laboratories. Die Liste seiner Autoren deckt sich in großen Teilen mit der des bereits in die Jahre gekommenen Unix aus demselben Hause. 
+</B>
+<P>
+<A HREF="#iX-TRACT">Unterthema: iX-TRACT</A><BR>
+<A HREF="#Schall%20und%20Rauch">Unterthema: Schall und Rauch</A><BR>
+<A HREF="#UNTERST220TZTE%20PC-HARDWARE">Unterthema: UNTERSTÜTZTE PC-HARDWARE</A><P>
+Die Motivation für ein neues Betriebssystem reifte an den Bell Laboratories gegen Ende der 80er Jahre. Ausschlaggebend war die Entwicklung, die typische Unix-Systeme bis zu diesem Zeitpunkt durchlaufen hatten: Das alphanumerische Terminal am bürokratisch verwalteten Mainframe bekam Konkurrenz durch eine Workstation mit Zugriff auf die Dienste mehrerer Serversysteme, beide unter Unix. Der durch die multifunktionale Workstation gewonnenen Freiheit des einzelnen Anwenders stand der große administrative Aufwand gegenüber, dem der normale Anwender nicht gewachsen war. 
+
+<P>
+Mit Plan 9 startete die Entwicklergruppe unter Dennis Ritchie den Versuch, ein zentral administriertes, kosteneffektives System auf Basis preiswerter Hardware zu schaffen. Dies erinnert an den Tenor der seit etwa zwei Jahren geführten Diskussion um die `Total Cost Of Ownership' moderner EDV-Systeme. Man hat inzwischen auch anderenorts erkannt, daß die Verwaltung von Arbeitsplatzcomputern einen hohen Aufwand erfordert, den Anwender selbst in der Regel nicht erbringen können. Hierzu bedarf es meist mehrerer Spezialisten, die solche, oftmals heterogene Systeme administrieren, die zudem meist noch an unterschiedlichen, weit verteilten Standorten installiert sind. 
+
+<P>
+<H3>Die wahren Erfinder der NCs 
+</H3>
+Hinzu kommt, daß die Multifunktionalität von Workstations ein Fehlerpotential beherbergt, dem nur durch entsprechend ausgebildetes Personal mit erheblichem Kostenaufwand begegnet werden kann. Wer die Debatte um den Netzcomputer verfolgt, wird eine gewisse Analogie nicht leugnen wollen. 
+
+<P>
+Die Lösung à la Plan 9 für dieses Problem heißt: jeder tut nur das, was er am besten beherrscht. Ein großes Plan-9-System besteht aus einer Reihe vernetzter Rechner. Den eingesetzten Maschinen fallen dedizierte Aufgaben zu. Es werden dabei vier Konfigurationen unterschieden: Terminals, CPU-, Autorisierungs- und Fileserver, von denen jede in praktisch beliebiger Häufung vorkommen darf. 
+
+<P>
+Einfache, billige Maschinen dienen dem Anwender als grafisches Terminal für die Inanspruchnahme zentraler Dienste. Sie stellen den Investitionsschutz sicher, da sie aufgrund der geringen Anforderungen auch bei Weiterentwicklung des Systems über einen sehr langen Zeitraum verwendbar bleiben und durch preiswerte Discount-PC-Hardware realisierbar werden können. Diese Terminals sind über Netzwerke niederer Bandbreite wie Ethernet und ISDN mit leistungsstarken Servern verbunden. Beim Einschalten bootet ein Terminal den Plan-9-Kernel entweder übers Netz oder von der optionalen Festplatte. 
+
+<P>
+Sämtliche Server stehen über Netzwerke mit extrem hoher Bandbreite in Verbindung und stellen zentrale Dienste wie Rechenzeit und Massenspeicher bereit. CPU-Server unterscheiden sich, was ihre Softwarekonfiguration anbelangt, nur unwesentlich von einem Terminal: sie arbeiten mit nahezu dem gleichen Kernel. Der wesentliche Unterschied besteht in der leistungsfähigen Hardware, die ein CPU-Server vielen Benutzern in Form von Rechenzeit zur Verfügung stellt. Der Autorisierungsserver, der die Benutzerzulassung der Terminals regelt, ist immer auch CPU-Server, schon allein, weil seine wenig ressourcenbelastenden Aufgaben keine eigene Maschine rechtfertigt. Einzig der Fileserver nimmt eine Sonderposition ein. Auf ihm läuft ein dedizierter Plan-9-Kernel, der ausschließlich Dateidienste bereitstellt. Dafür bieten sie aber die notwendige Kapazität. 
+
+<P>
+<H3>Zentrale Jukebox sammelt Tagesbestand 
+</H3>
+So ist der von den Bell Labs betriebene Fileserver mit einer 350-GByte-WORM-Jukebox bestückt, der 7 GByte konventioneller Festplattenkapazität in Verbindung mit 128 MByte Speicher als 2nd-Level-Block-Cache vorgeschaltet sind. Einmal am Tag werden die Änderungen an den Benutzerdaten im Cache während des laufenden Betriebs auf die Jukebox kopiert. Dadurch hat jeder Anwender die Möglichkeit, jederzeit auf beliebige Versionen seiner Dateien zuzugreifen. Ein Sicherungsverfahren auf Basis von Wechselmedien ist nicht notwendig, und Gedanken über Festplattenplatz braucht sich niemand zu machen: Sollten die Kapazitäten aufgebraucht sein, so werden neue, preiswerte Technologien zur Verfügung stehen, die noch viel mehr Platz bieten - davon geht man jedenfalls aus! 
+
+<P>
+<P><A HREF="pic02.jpg"><IMG SRC="pic02.jpg" ALT="minpic02.jpg"></A><P><STRONG>Plan 9 im Vollausbau: CPU- und Fileserver bilden in einem LAN sehr großer Bandbreite eine Einheit, deren Dienste Terminals nutzen, die auch mit langsamen Verbindungen zurechtkommen (Abb. 1). 
+</STRONG>
+<P>
+Anders als bei dem älteren Bruder Unix können technisch Interessierte Plan 9 im Source verstehen. Für zirka 170 DM erhält man zwei rund 500 Seiten starke Handbücher, eine CD sowie vier Disketten für eine PC-Installation. Die Images der Disks sind übrigens als Evaluierungsversion, natürlich ohne Quellen und Dokumentation, im Internet verfügbar (<A HREF="http://plan9.bell-labs.com/plan9/index.html">http://plan9.bell-labs.com/plan9/index.html</A>). 
+
+<P>
+<H3>Installation und Betrieb auf PCs 
+</H3>
+Die PC-Installation unterstützt nicht besonders viele Varianten, aber dafür Standardhardware (siehe Kasten `Unterstützte Hardware'). Von der ersten Diskette wird ein Installationskern auf die bestehende (DOS-)Betriebssysteminstallation kopiert. In einem zweiten Schritt kann nun ein Minimalsystem (20 MByte) von den drei übrigen Disketten oder ein vollständiges, zirka 500 MByte großes System aufgespielt werden. Letztgenannte Variante enthält eine Reihe von Tools sowie die gesamten Quellen für die verfügbaren Plattformen samt Cross-Entwicklungssysteme für Systeme auf Basis des MC68020, R2/3/4000, SPARC, i386, i960 und AT&amp;T 3210. 
+
+<P>
+Schon die fehlende Skalierbarkeit beim Einrichten zeigt, daß es sich bei dem Setup um ein Mittel zum Zweck handelt. Keine ausgeklügelte Hardwareerkennung, keine intuitive Partitionierungssoftware, also nichts für den OS-Jäger und -Sammler, der neben NT und Linux eine weitere Trophäe für sein OS/2-Bootmenü sucht. An Plan 9 Interessierte wissen und nehmen hin, daß dessen Setup die Partitionstabelle ignoriert und den gesamten Platz nach der ersten Partition in ein eigenes Filesystem (9fs) wandelt ... 
+
+<P>
+Belohnt wird man aber in jedem Fall mit einem kompakten, aber auch sehr gewöhnungsbedürftigen Window-System, einem mindestens ebenso gewöhnungsbedürftigen Editor sowie einer kompletten Entwicklungsumgebung, in der ein Cross-Plattform-Debugger nicht fehlen darf. 
+
+<P>
+<H3>Plan 9 ignoriert Partitionstabelle 
+</H3>
+In der von uns gewählten Konfiguration sollten, ganz gemäß dem Gedanken einer zentralisierten Administration der Designer von Plan 9, plattenlose PCs zum Einsatz kommen. Die in diesem Zusammenhang eher langweilige Aufgabe des Boot- und Fileservers übernahm ein Unix-System, das mit dem U9FS-Server von Plan-9-CD ausgestattet war. Obwohl die Plan-9-Terminals prinzipiell über LAN- oder sogar WAN-Verbindungen hochfahren können, waren für dieses Vorhaben Eingriffe in die Tiefen des Bootcodes von Plan 9 notwendig. Zum einen arbeitet der Bootloader sehr hardwarenah auf den lokalen Festplatten oder Disketten, von denen er die Konfiguration liest; eine Netzkonfiguration ist nicht vorgesehen. Zum anderen holt der Loader zwar den Kern über Standardmechanismen wie BOOTP und TFTP, jedoch übernimmt der Kern diese Konfiguration nicht, sondern stellt selbst einen Bootrequest, auf den er als Antwort eine Plan-9-spezifische Erweiterung erwartet, die unser Unix-Server nicht liefern wollte. 
+
+<P>
+Damit der U9FS-Server in die Lage versetzt werden konnte, ein Plan-9-Root-Filesystem zu exportieren, bedurfte es noch einiger Modifikationen, danach waren die Terminals endlich bootfähig. Für die Anmeldung bedarf es noch eines Autorisierungsservers, eine Aufgabe, die nur ein Plan-9-CPU-Server übernehmen kann. Bemerkenswert in diesem Zusammenhang, daß man sich nicht an einem laufenden Plan-9-System anmeldet, sondern die Anmeldung Bestandteil des Bootvorgangs ist, also das Terminal komplett in einem Benutzerkontext läuft. 
+
+<P>
+<H3>Cross-Plattform-Entwicklung inklusive 
+</H3>
+Plan 9 bietet drei Entwicklungsumgebungen. Die native Plan-9-C-Umgebung, die auch zum Erzeugen des Betriebssystemkerns selbst dient, ergänzt durch APE, das ANSI/POSIX-Environement (ANSI X3.159-1989 und POSIX IEEE 1003.1-1990, ISO 9945-1) zur schnellen Portierung von Unix-Anwendungen. APE verfügt neben den Standard-POSIX-Funktionen aber auch über gängige Real-life-Ergänzungen, die für eine wirklich schnelle Portierung notwendig sind. Diese lassen sich einzeln ein- und ausschalten, so daß APE den Entwickler auch bei der Anpassung bestehender Software an POSIX unterstützt. 
+
+<P>
+Zusätzlich zu den beiden C-Umgebungen bietet Plan 9 auch noch Alef, eine Sprache, die primär zur Realisierung von parallelen Prozeßsystemen gedacht ist. Von der Syntax her ist sie fast identisch mit C, bietet aber Erweiterungen zur Prozeßsynchronisation. Alef-Programme sehen zwar auf den ersten Blick wie C-Programme aus, sind aber anders strukturiert und funktionieren auch ein wenig anders. Zu Alef gehört Acid, ein Cross-Plattform-Sourcelevel-Debugger, der die speziellen parallelen Multiprozeßeigenschaften Alefs berücksichtigt. Er geht dabei weit über die Möglichkeiten anderer Debugger hinaus und bietet keinen festen Befehlssatz an, mit dem die wichtigsten Methoden der Fehlersuche umgesetzt werden können, sondern stellt eine Sprache zur Verfügung, mit der gerade für eine spezielle Problemstellung gewünschte Anforderungen an einen Debugger implementierbar sind. Das klingt sehr gut, heißt aber auch, daß man eine nicht wenig komplexe Sprache, die aus sehr viel Syntax besteht, eigens zur Fehlersuche erlernen muß. 
+
+<P>
+<H3>Designstudie oder Betriebssystem 
+</H3>
+Den immer noch währenden Erfolg des Oldtimers Unix und der in seinem Umfeld entstandenen Konzepte wird sein Nachfolger nicht erzielen - auch nicht in Ansätzen. Der Bedarf an Betriebssystemen ist gedeckt, wie es scheint. Neue Varianten müssen durch ihre Wirtschaftlichkeit überzeugen. `Wahrung des Investitionsschutzes' und `Point of Investment Return' sind harte Prüfsteine im Kampf um die Gunst des Marktes geworden. Die Disziplin `Einführung eines neuen Betriebssystems' darf als schwierig gelten, und bahnbrechend neue Konzepte stehen in der Regel konträr zu eben diesen Prüfsteinen. Der Markt nimmt solche Veränderungen nur in sehr kleinen, gut verdaulichen Häppchen an. 
+
+<P>
+Das Betriebssystem Plan 9 bietet nun eine ganze Reihe neuer Konzepte, die einer Markteinführung, zumindest einer erfolgreichen, entgegensprechen. Dabei bleiben die Details und die darin verborgenen Potentiale exklusiver Vorbehalt des aufmerksamen Betrachters. Dem Anwender, also dem der dafür bezahlen soll, stellt sich ein Plan-9-System nicht anders als eine der ihm bekannten heterogenen Rechnerumgebungen dar, in dem eine große Anzahl intelligenter Client-Systeme mit einer kleineren Anzahl von Serversystemen kommuniziert, gravierend jedoch der Unterschied zum Bekannten: Auf einem Plan-9-Client läuft weder FrameMaker noch MS-Office. 
+
+<P>
+Ganz ist die Technologie jedoch nicht verloren. In Lucents Inferno [1] scheinen viele Konzepte aus Plan 9 wiedergeboren, und es dürfte nicht unwahrscheinlich sein, daß in Zukunft alle bei der Benutzung von Telefonen oder Set-Top-Boxen zu Plan-9-Anwendern avancieren. (rh) 
+
+<P>
+<H5>JÜRGEN SCHUCK 
+</H5>
+<P>
+<I>arbeitet als Kundenbetreuer im Bereich PC-Management bei Dr. Materna, Dortmund. 
+</I>
+<P>
+<H5>MICHAEL ZIEGLER 
+</H5>
+<P>
+<I>ist Produktmanager im Bereich PC-Management bei Dr. Materna, Dortmund.
+</I>
+<P>
+<H5>Literatur 
+</H5>
+[1] Martin Weitzel; Betriebssysteme; Hexentanz der Kaffeemaschinen; Plan-9-Ideen prägen Inferno; <I>iX</I> 6/97, S. 56 ff. 
+
+<P>
+[2] Achim Born; Betriebssysteme; Mach's noch mal, Bell Labs; AT&amp;Ts Plan 9 soll auf den Markt; <I>iX</I> 4/94, S. 13 
+
+<P>
+<A NAME="iX-TRACT">Kasten 1</A>
+<HR>
+<H3>iX-TRACT
+</H3>
+<UL><LI>	Plan 9 beruht auf dem Konzept eines Netzwerkbetriebssystems zum Einsatz grafischer Terminals. 
+</UL>
+<UL><LI>	Die Entwicklung von Plan 9 stammt aus den Bell Laboratories, der gleichen Schmiede, in der Unix seinen Ursprung nahm. 
+</UL>
+<UL><LI>	Einige Konzepte von Plan 9 haben bereits Eingang in andere Entwicklungen gefunden. 
+</UL>
+<A NAME="Schall%20und%20Rauch">Kasten 2</A>
+<HR>
+<H3>Schall und Rauch
+</H3>
+<P><A HREF="pic03.jpg"><IMG SRC="pic03.jpg" ALT="minpic03.jpg"></A><P><STRONG>Schlüssel zum System: Der Namensraum von Plan 9 - ähnlich dem Unix-Dateisystem - bildet den Zugang zum Ganzen. Dienste exportieren aufeinander aufbauende Dateien in den Namensraum, den spezielle Kommandos benutzerspezifisch zusammenstellen (Abb. 2). 
+</STRONG>
+<P>
+Unix-Anwender und Plan-9-Novizen sucht zuweilen ein Gefühl der Unsicherheit heim, während sie ihre ersten Schritte im Namensraum von Plan 9 unternehmen. Dateien und Verzeichnisse im Unix-System sind hinsichtlich ihrer Existenz als Daten auf einer Festplatte real. Das gilt auch für die Datei- und Dateisystemabstraktionen unter Unix. Gerätetreiber werden über existierende Dateien referenziert, <I>/proc</I> und Filedescriptor-Dateisysteme sind in wirklichen Verzeichnissen montiert, ebenso wie die Netzwerkdateisysteme - was das gute Gefühl realer Existenz vermittelt; weiß man doch, daß es sich um den Zugriff aus der Ferne auf Festplattendateien handelt. 
+
+<P>
+Drei Prinzipien stellen die Basis von Plan 9 dar: 
+
+<P>
+1. Ressourcen werden auf Namen in einem hierarchischen Dateisystem abgebildet. 
+
+<P>
+2. Der Zugriff auf Ressourcen erfolgt mittels eines dafür vorgesehenen Protokolls. 
+
+<P>
+3. Dateihierarchien unterschiedlicher Dienste (die von diesen Diensten bereitgestellten Ressourcen) sind zu einem einzigen, privaten und hierarchischen Dateisystem, dem Namensraum zusammengefaßt. 
+
+<P>
+Während der Unix-Kernel bootet, erklärt er ein ausgezeichnetes Dateisystem zur Wurzel, an die alle weiteren Festplatten-, Netzwerk- und sonstigen Dateisysteme angehängt werden. Die Wurzel des Namensraums von Plan 9 entsteht ebenfalls während des Bootvorgangs, aber mit Plan-9-Methoden. Dateisysteme sind optionales Beiwerk. Den Ursprung des Namensraums bildet ein virtuelles Gebilde, dessen Lebenszeit auf die des Plan-9-Kernel begrenzt ist. Das Modell des Namensraums entspricht dem eines hierarchischen Dateisystems. Ressourcen werden auf Dateien im Namensraum abgebildet. Dabei stellt der Kern Hardwareressourcen wie Maus, Tastatur, Bildschirm oder Systemuhr direkt bereit. Der Zugriff erfolgt über die korrespondierenden Dateinamen 
+
+<P>
+<PRE>/dev/mouse
+/dev/keyboard
+/dev/cons
+/dev/time
+/dev/date
+</PRE>
+Darüber hinaus erstellt der Kern Einträge im Namensraum für wichtige Datenstrukturen von potentiell allgemeinem Interesse. Hierzu zählt unter anderem die Prozeßumgebung (Environment) im Verzeichnis <I>/env</I> mit Dateieinträgen, deren Namen denen der Umgebungsvariablen entsprechen und Dateiinhalten, in denen die Werte dieser Variablen enthalten sind. Ein weiterer Kandidat ist das Verzeichnis <I>/proc</I>. Es enthält, Abbildungen der dem System bekannten Prozesse in Form von Dateihierarchien. Ein Feature, das den meisten Linux-Benutzern unter den Lesern bestens vertraut sein dürfte, da es auch Linus Thorvalds derart begeisterte, daß er diese Idee vom dateiorientierten Zugriff auf laufende Prozesse in sein Betriebssystem übernahm. 
+
+<P>
+Neben den Hardwareressourcen des Plan-9-Kernels gibt es die Dienste. Sie werden durch Serverprozesse implementiert, die ihre Objekte, die Gegenstände ihrer Dienstleistung, als Dateihierarchien exportieren. Beispiele sind das Festplattendateisystem <I>kfs</I>, der FTP-Service und das Window-System 8 1/2. 
+
+<P>
+Der <I>kfs</I>-Service ist die Implementierung des Plan-9-Festplatten-Dateisystems. Nach dem Start des Dienstes exportiert dieser die Dateien auf den lokalen Festplatten als Dateihierarchie. Die Plan-9-Variante des bekannten FTP-Service ermöglicht ebenfalls einen dateisystemorientierten Zugriff auf den Datenbestand eines externen FTP-Servers. Für eine Anwendung ist daher nicht ersichtlich, ob sie auf lokalen Dateien arbeitet oder solchen, die via FTP bereitgestellt werden. Das Plan 9 Window System 8 1/2 fungiert als Multiplexer für die Dateien <I>/dev/bitblt</I>, <I>/dev/keyboard</I> und <I>/dev/mouse</I>. 8 1/2 exportiert diese Dateien in sämtliche geöffneten Fenster. Dabei übertreffen Konzeption und Bedienung dieses Fenstersystems den Namen in puncto Gewöhnungsbedürftigkeit um Längen. 
+
+<P>
+<P><A HREF="pic04.jpg"><IMG SRC="pic04.jpg" ALT="minpic04.jpg"></A><P><STRONG>Raumgreifend: Durch die Überlagerung von Dateiverzeichnissen zu Unions wird der Namensraum von Plan 9 zu einem dreidimensionalen Gebilde (Abb. 3). 
+</STRONG>
+<P>
+Werkzeuge zur Manipulation des Namensraums ermöglichen es nun, die von den Diensten exportierten Dateihierarchien prozeßspezifisch zu organisieren, somit einen Namensraum zu erstellen. Dabei ist es möglich, auch auf die Dienste entfernter Plan-9-System zuzugreifen. So kann der <I>kfs</I>-Service von einer entfernten Maschine in den lokalen Namensraum einer Workstation importiert werden, wodurch die Workstation Zugriff auf die Festplatten des entfernten Systems erhält. Der Import von <I>/proc</I> einer fernen Maschine erlaubt das Untersuchen mit einem lokalen Debugger der auf dem exportierenden System laufenden Prozesse. 
+
+<P>
+Ermöglicht wird dieser Mechanismus durch das 9P-Protokoll, das zentraler Bestandteil des Plan-9-Systems und in dessen Kernel integriert ist. Es handelt sich um ein transaktionsorientiertes, byteweise arbeitendes Protokoll der Anwendungsebene, konzipiert zur Kontrolle von Dateisystemen. 
+
+<P>
+Eine Besonderheit im Namensraum von Plan 9 bilden die sogenannten Unions:  Diese sind eine Zusammenfassung mehrerer Dateiverzeichnisse zu einem einzelnen Knoten. Wird <I>/proc</I> einer fernen Maschine importiert, so enthält das Verzeichnis im Namensraum der Workstation die Abbildungen der lokalen und der auf dem entfernten System laufenden Prozesse. Dabei sind die mit gleicher PID (Dateinamen) mehrfach enthalten. 
+
+<P>
+Das Auslesen von Unions erfolgt verzeichnisweise in der Reihenfolge der Zusammenstellung. Dank dieses Mechanismus vermag etwa die Plan-9-Shell <I>rc </I>ohne eine PATH-Variable auszukommen: Ausführbare Programme sucht sie stets in<I> /bin </I>des Namensraums. Dabei ist dies ein Union, das sämtliche Verzeichnisse mit den darin enthaltenen ausführbaren Programmen enthält. 
+
+<P>
+Die Abbildung von Ressourcen auf Dateien hat auch im Betriebssystem Plan 9 Grenzen. Es startet wie Unix ein Programm durch eine <I>fork()/exec()</I>-Sequenz und nicht, wie man vermuten könnte, durch das Kopieren des Executables nach <I>/proc</I>. Und es ist nicht möglich, den Hauptspeicher einer Maschine etwa auf ein Terminal zu importieren und ihn den lokalen Prozessen bereitzustellen.
+
+<P>
+<A NAME="UNTERST220TZTE%20PC-HARDWARE">Kasten 3</A>
+<HR>
+<H3>UNTERSTÜTZTE PC-HARDWARE
+</H3>
+<P>
+<TABLE BORDER><TR CLASS=body ALIGN=left><TD><B>CPU</B><TD>386, 486 oder Pentium 
+
+<TR CLASS=body ALIGN=left><TD><B>Bussysteme</B><TD>ISA/EISA-Bus, keine direkte PCI-Unterstützung
+
+<TR CLASS=body ALIGN=left><TD><B>Festplatte</B><TD>IDE- (mit LBA-Support) und SCSI-Platten; SCSI: Adaptec 1542(BC) und kompatible oder Ultrastor (13)4f
+
+<TR CLASS=body ALIGN=left><TD><B>Netzwerkkarten</B><TD>WD8003, WD8013, SMC Elite und 3C509/579
+
+<TR CLASS=body ALIGN=left><TD><B>Grafik</B><TD>S3 801/805/928/864, ET4000, ATI Mach 32/64 und CLGD-542x/543x
+
+<TR CLASS=body ALIGN=left><TD><B>Audio</B><TD>Soundblaster 16
+
+<TR CLASS=body ALIGN=left><TD><B>CD-ROM</B><TD>SCSI-CD-ROM oder Mitsumi, Panasonic oder Matsushita an Soundblaster
+
+<TR CLASS=body ALIGN=left><TD><B>Maus</B><TD>3-Tasten-, seriell oder PS/2
+</TABLE>
+
+
+<P>
+</BODY></HTML>
