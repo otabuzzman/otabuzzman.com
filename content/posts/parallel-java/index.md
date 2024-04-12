@@ -1,5 +1,5 @@
 ---
-date: 2024-04-25T23:38:31+02:00
+date: 2024-04-11T23:38:31+02:00
 title: "Java parallelization with CUDA"
 description: "A stepwise approach to parallelize Java code"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
@@ -7,6 +7,8 @@ disable_share: true
 draft: true
 ---
 
-This is an infographic showing my first approach to parallelizing Java code. It worked for me then and probably still does now, but now there are tools that are much easier to use. One of them is TornadoVM, which essentially allows the programmer to mark up the code to be parallelized and does all the heavy lifting for execution on popular accelerators (AMD, Intel, NVIDIA).
+This infographic explains my first approach to parallelizing Java code. It worked for me then and probably still does, but now there are tools that are much easier to use. One of them is [TornadoVM](https://www.tornadovm.org/), which essentially allows the programmer to mark up the code to be parallelized and does all the heavy lifting for execution on popular accelerators (AMD, Intel, NVIDIA). I made a tutorial on TornadoVM which was published by a German computer magazine: Part [one](https://www.heise.de/select/ix/2024/2/2332508044372163045) and [two](https://www.heise.de/select/ix/2024/3/2332713580068863270)).
 
-![Infographic](parallel-java.png)
+Infographic made with [Pictochart](https://piktochart.com/).
+
+![Infographic](parallel-java.jpg)
