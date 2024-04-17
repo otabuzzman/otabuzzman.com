@@ -1,2 +1,7 @@
+.hugo_build.lock
+archetypes/
+go.mod
+go.sum
+resources/
 otabuzzman.com/
 
