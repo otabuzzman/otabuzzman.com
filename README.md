@@ -1,21 +1,24 @@
 # otabuzzman's blog
-A personal website. The idea is to use the repository as a kind of content hub. Posts to be published can be written on any device and then submitted to the repo, which in turn updates the website. The latter is done through a workflow in GitHub Actions that is triggered manually by content marked as a new release.
+A personal website. The idea is to use the repository as a hub for publishing content to [otabuzzman.com](https://otabuzzman.com) by running a GitHub Actions workflow either manually or by creating a new release of the repository. The workflow runs the Hugo static site generator on the website to generate HTML and publish it to an Apache web server.
 
-The site is [otabuzzman.com](https://otabuzzman.com). [Hugo static site generator](https://gohugo.io/) is set up to fetch content from the repository and publish it to the web server. Hugo also uses the [Ananke](https://github.com/theNewDynamic/gohugo-theme-ananke) theme.
+### Publishing content
 
-### Publish content
+Add or update Hugo-compliant content to the repository and run the [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) workflow. Use existing content files as templates. Make sure the _front matter_ of new or updated content is not marked as draft and its date is not in the future. Once the workflow is complete the new content is online.
 
-Add text and images directly to the repository and run the [GA Build Site](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml) workflow (either manually or by issuing a release publish event).
+Alternatively, you can set up a local Hugo site to check new content before updating the repository and running the workflow.
 
-Clone the repo and set up a local Hugo configuration. Add content and create a website with local Hugo. Then push content to the repository and run the workflow.
+- Install [Go](https://golang.org/doc/install)
+- Install [Hugo extended](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
 
-- Install Go from [golang.org](https://golang.org/doc/install)
-- Install hugo (extended) from [github.com](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
-- Set up local Hugo configuration
+- Set up local website:
 
   ```bash
-  # create otabuzzman.com
   WEBSITE=otabuzzman.com
+  
+  git clone https://github.com/otabuzzman/${WEBSITE}.git
+  cd $WEBSITE
+  
+  # create otabuzzman.com
   hugo new site $WEBSITE
   cd $WEBSITE
   
@@ -25,29 +28,28 @@ Clone the repo and set up a local Hugo configuration. Add content and create a w
   # initiate hugo modules
   hugo mod get github.com/otabuzzman/$WEBSITE
   
-  # set up local hugo configuration
-  wget https://raw.githubusercontent.com/otabuzzman/otabuzzman.com/main/config.toml
+  # upgrade repo to website
+  tar --exclude=config.toml -cf - . | ( cd .. ; tar xf - )
+  cd ..
   
-  # run a local Hugo server that continuously publishes content changes on http://localhost:1313
+  # run Hugo webserver
   hugo server -D
-  
-  # update content,
-  # push to repo, and
-  # run workflow.
   ```
 
-- Check [http://localhost:1313](http://localhost:1313)
+- Check local website at [http://localhost:1313](http://localhost:1313)
 
-Copy Hugo's local publishing directory directly to the site.
+- Update repository and run [workflow](https://github.com/otabuzzman/otabuzzman.com/actions/workflows/ga-build-site.yml)
+- Alternatively, copy Hugo's local publishing directory directly to otabuzzman.com:
 
-```bash
-PUBLISHDIR=opt/otabuzzman/www
-rsync -avz --omit-dir-times --no-perms --delete  \
-  -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
-  $PUBLISHDIR/ leaf@otabuzzman.com:/$PUBLISHDIR
-```
+  ```bash
+  PUBLISHDIR=opt/otabuzzman/www
+  
+  rsync -avz --omit-dir-times --no-perms --delete  \
+    -e "ssh -i $HOME/.ssh/otabuzzman.com -p 3110" \
+    $PUBLISHDIR/ leaf@otabuzzman.com:/$PUBLISHDIR
+  ```
 
-- Check [https://otabuzzman.com](https://otabuzzman.com)
+- Check remote website at [https://otabuzzman.com](https://otabuzzman.com)
 
 ---
 
