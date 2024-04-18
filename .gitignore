@@ -1,7 +1,10 @@
+.gitmodules
 .hugo_build.lock
 archetypes/
 go.mod
 go.sum
 resources/
+themes/
+lab/
 otabuzzman.com/
 
