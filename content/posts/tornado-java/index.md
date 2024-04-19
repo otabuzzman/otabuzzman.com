@@ -59,9 +59,9 @@ public class Artwork extends org.chartacaeli.model.Artwork implements Postscript
 }
 ```
 
-The code that performs the projection is in class `Artwork`. There are several nested classes within `Artwork` that do the real work: `Artwork$PJ2TextureMapperGpu` implements the projection using CUDA, `Artwork$PJ2TextureMapperSmp` uses the available CPU cores, and `Artwork$PJ2TextureMapperSeq` is a sequential implementation without any parallelization. It's a matter of configuration which of these classes the app actually uses by calling the instance method `main` of the respective class
+The code that performs the projection is in class `Artwork`. There are several nested classes within `Artwork` that do the real work: `Artwork$PJ2TextureMapperGpu` implements the projection using CUDA, `Artwork$PJ2TextureMapperSmp` uses the available CPU cores, and `Artwork$PJ2TextureMapperSeq` is a sequential implementation without any parallelization. It's a matter of configuration which of these classes the app actually uses by calling the instance method `main` of the respective class instance.
 
-For simplicity I decided to continue with this concept and simply create another class `Artwork$PJ2TextureMapperTvm` for TornadoVM. The [_Loop Parallel API_](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) is for parallelization of for-loops (as the name might imply). In an ideal world, using this API doesn't require much more effort than adding an annotation to the (sequential) for-loop in question and some code that converts the method containing the for-loop into a kernel and ultimately makes that kernel running on an accelerator.
+For simplicity I decided to continue with this concept and simply create another class `Artwork$PJ2TextureMapperTvm` for TornadoVM. The [_Loop Parallel API_](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) is for parallelization of for-loops (as the name might imply). In an ideal world, using this API doesn't require much more effort than adding an annotation to the (sequential) for-loop in question and some code that converts the method containing the for-loop into a kernel and eventually makes that kernel running on an accelerator.
 
 ```java
 // TornadoVM implementation
