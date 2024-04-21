@@ -10,7 +10,7 @@ draft: true
 
 A few years ago I created a Java app that was quite slow. It ran a nested for-loop with some mathematical calculations up to a hundred times with a varying number of up to a few million iterations.
 
-The iterations were independent of each other and therefore this for-loop was an ideal candidate for parallelization. So I decided to offload the for-loop to an accelerator and chose CUDA for this task.
+The iterations were independent of each other and therefore this for-loop was an ideal candidate for parallelization. So I decided to offload execution to an accelerator and chose CUDA for this task.
 
 While searching for a CUDA JNI I came across [Alan Kamnisky](https://www.cs.rit.edu/~ark/)'s [Parallel Java 2 library](https://www.cs.rit.edu/~ark/pj2.shtml) (PJ2). Alan is a (now retired) professor at the Rochester Institute of Technology. For his lectures he wrote PJ2 and the accompanying book [Big CPU, Big Data](https://www.cs.rit.edu/~ark/bcbd_2/). There were other CUDA JNI implementations at the time (e.g. jCUDA), but I stuck with PJ2 because it also provides APIs for Java parallelization on multiple CPU cores, as well as abstractions for executing code on multiple nodes.
 
@@ -21,7 +21,7 @@ This is where [TornadoVM](https://www.tornadovm.org/) enters the stage to elimin
 The for-loop I parallelized projects one planar rectangular area onto another in three-dimensional space. Each area represents an image and is thus defined by a bitmap, with each element representing a pixel.
 
 Here is a sketch of the strategy I implemented:
-- Find target bitmap for a given source image
+- Find target bitmap dimensions for source image
 - For each pixel in target image
   - Find corresponding pixel in source image
   - Set target pixel to color of source
@@ -32,13 +32,12 @@ The overall use case of my app is creating star maps. There is a function of map
 
 ```java
 public class Artwork extends org.chartacaeli.model.Artwork implements PostscriptEmitter {
-    private int[] texture ; // source image
+    private int[] texture ;  // source image
     private int dimo, dimp ; // coordinates are o, p
     private int maxo, maxp ;
 
-    private int[] mapping ; // result image
+    private int[] mapping ;  // result image
     private int dims, dimt ; // coordinates are s, t
-    private double maxs, maxt ;
 
     private double ups ; // units per dot
 
@@ -59,12 +58,19 @@ public class Artwork extends org.chartacaeli.model.Artwork implements Postscript
 }
 ```
 
-The code that performs the projection is in class `Artwork`. There are several nested classes within `Artwork` that do the real work: `Artwork$PJ2TextureMapperGpu` implements the projection using CUDA, `Artwork$PJ2TextureMapperSmp` uses the available CPU cores, and `Artwork$PJ2TextureMapperSeq` is a sequential implementation without any parallelization. It's a matter of configuration which of these classes the app actually uses by calling the instance method `main` of the respective class instance.
+The code that performs the projection is in class `Artwork`. There are several nested classes within `Artwork` that do the real work:
+- `Artwork$PJ2TextureMapperGpu` implements the projection using CUDA,
+- `Artwork$PJ2TextureMapperSmp` uses the available CPU cores, and
+- `Artwork$PJ2TextureMapperSeq` is a sequential implementation without any parallelization.
 
-For simplicity I decided to continue with this concept and simply create another class `Artwork$PJ2TextureMapperTvm` for TornadoVM. The [_Loop Parallel API_](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) is for parallelization of for-loops (as the name might imply). In an ideal world, using this API doesn't require much more effort than adding an annotation to the (sequential) for-loop in question and some code that converts the method containing the for-loop into a kernel and eventually makes that kernel running on an accelerator.
+It's a matter of configuration which of these classes the app actually uses by calling the method `main` of the respective class instance.
+
+For simplicity I decided to continue with this concept and simply create another class `Artwork$PJ2TextureMapperTvm` for TornadoVM.
+
+The [_Loop Parallel API_](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) is for parallelization of for-loops (as the name might imply). In an ideal world, using this API doesn't require much more effort than adding the `@Parallel` annotation to the (sequential) for-loop in question and some code that converts the method containing the for-loop into a kernel and eventually makes that kernel running on an accelerator.
 
 ```java
-// TornadoVM implementation
+// a new inner class utilizes TornadoVM
 private class PJ2TextureMapperTvm extends Task {
     private double[] st ;
     private Coordinate uv ;
@@ -72,7 +78,7 @@ private class PJ2TextureMapperTvm extends Task {
     private org.chartacaeli.Coordinate eq ;
     private double[] ca ;
 
-    public PJ2TextureMapperSeq() {
+    public PJ2TextureMapperTvm() {
         st = new double[] { 0, 0, 1 } ;
         uv = new Coordinate() ;
 
@@ -87,10 +93,12 @@ private class PJ2TextureMapperTvm extends Task {
         Vector3D vca, xca ;
         double o, p ;
 
-        for ( int t=0 ; dimt>t ; t++ ) {
+        // the @Parallel annotation instructs TornadoVM
+        // to parallelize the body
+        for ( @Parallel int t=0 ; dimt>t ; t++ ) {
             st[1] = t*ups ;
 
-            for ( int s=0 ; dims>s ; s++ ) {
+            for ( @Parallel int s=0 ; dims>s ; s++ ) {
                 st[0] = s*ups ;
 
                 t0 = tmM2P.operate( st ) ;
@@ -119,8 +127,113 @@ private class PJ2TextureMapperTvm extends Task {
     }
 
     public void main( String[] argv ) throws Exception {
+        IntArray source = new IntArray(texture.length);
+        IntArray result = new IntArray(mapping.length) ;
+
+        // copy image (texture) to source buffer here ...
+
+        // create a TaskGraph with a unique id
+        TaskGraph taskGraph = new TaskGraph("s0")
+             // 1st node: copy source image to accelerator
+            .transferToDevice(DataTransferMode.FIRST_EXECUTION, source)
+             // 2nd node: execute kernel on accelerator
+            .task("t0", Artwork.PJ2TextureMapperTvm::kernel, source, result)
+             // 3rd node: copy projection result to host
+            .transferToHost(DataTransferMode.EVERY_EXECUTION, result);
+
+        // make task graph read-only
+        ImmutableTaskGraph immutableTaskGraph = taskGraph.snapshot();
+        // TornadoVM defines plans for task graph execution
+        TornadoExecutionPlan executionPlan = new TornadoExecutionPlan(immutableTaskGraph);
+        // wait to complete execution on accelerator
+        TornadoExecutionResult executionResult = executionPlan.execute();
+
+        // copy result buffer to mapping here ...
     }
 }
 ```
 
-That said I started out with my original sequential implementation and copied the respective nested class into a new one. Then I moved the code from the `main` method into a static method and named it `kernel`. This method, actually the code in the body of the nested for-loops it contains, is subject to parallelization by TornadoVM. The signature of `kernel` foresees two buffers for the source and result images. The [buffer types](https://tornadovm.readthedocs.io/en/latest/programming.html#data-representation) are from the TornadoVM API and can be copied between host and accelerator. The new code in `main` is responsible for buffer allocation and transfers and eventually runs `kernel` on the accelerator.
+That said I started out with my original sequential implementation and copied the respective nested class into a new one. Then I moved the code from the `main` method into a static method and named it `kernel`. This method is subject to parallelization by TornadoVM. It is actually the code in the body of the nested for-loops it contains. The `@Parallel` annotations cause TornadoVM to compile the body into a kernel and run that kernel on an accelerator.
+
+The signature of `kernel` foresees two buffers for the source and result images. The [buffer type](https://tornadovm.readthedocs.io/en/latest/programming.html#data-representation) `IntArray` is one of several from the TornadoVM API that can be copied between host and accelerator.
+
+The new code in `main` is responsible for buffer allocation and transfers and eventually runs `kernel` on the accelerator. This is the minimum code required to make TornadoVM run a piece of Java code on an accelerator. Time to check if the compilation works and maybe even runs successfully. The latter requires a TornadoVM installation and I have postponed it for now.
+
+The former required some adjustments to my Maven setup. First I had to update my `pom.xml` to use Java 21 for compilation (set properties `maven.compiler.source` and `maven.compiler.target` to 21).
+
+Another requirement for TornadoVM is to enable the preview feature of the JDK (set `<enablePreview>` to `true` for Maven compiler plugin).
+
+Finally, I had to add a repository and dependencies to point to the actual API, i.e. the Jars. The TornadoVM website provides current [sniplets](https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects) for copy and paste.
+
+
+
+```bash
+git clone https://github.com/beehive-lab/TornadoVM.git
+cd TornadoVM
+
+bin/tornadovm-installer --jdk jdk21 --backend opencl,ptx,spirv
+```
+
+In my original setup, the PJ2 library is pre-installed in a separate folder, so I installed TornadoVM the same way. The installation is well [documented](https://tornadovm.readthedocs.io/en/latest/installation.html) and essentially requires cloning the repository and running the Python installer.
+
+```
+source setvars.sh
+
+tornado --devices
+```
+
+Once finished there is a batch file `setvars.sh` that must be sourced to run the `tornado` CLI, and ask it to list the available accelerators.
+
+```
+Number of Tornado drivers: 3
+Driver: SPIRV
+  Total number of SPIRV devices  : 1
+  Tornado device=0:0  (DEFAULT)
+    SPIRV -- SPIRV LevelZero - Intel(R) Iris(R) Xe Graphics
+            Global Memory Size: 6,3 GB
+            Local Memory Size: 64,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [512]
+            Max WorkGroup Configuration: [512, 512, 512]
+            Device OpenCL C version:  (LEVEL ZERO)
+
+Driver: OpenCL
+  Total number of OpenCL devices  : 3
+  Tornado device=1:0
+    OPENCL --  [NVIDIA CUDA] -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
+            Global Memory Size: 4,0 GB
+            Local Memory Size: 48,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [1024]
+            Max WorkGroup Configuration: [1024, 1024, 64]
+            Device OpenCL C version: OpenCL C 1.2
+
+  Tornado device=1:1
+    OPENCL --  [Intel(R) OpenCL Graphics] -- Intel(R) Iris(R) Xe Graphics
+            Global Memory Size: 6,3 GB
+            Local Memory Size: 64,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [512]
+            Max WorkGroup Configuration: [512, 512, 512]
+            Device OpenCL C version: OpenCL C 1.2
+
+  Tornado device=1:2
+    OPENCL --  [Intel(R) OpenCL] -- 11th Gen Intel(R) Core(TM) i5-11320H @ 3.20GHz
+            Global Memory Size: 15,8 GB
+            Local Memory Size: 32,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [8192]
+            Max WorkGroup Configuration: [8192, 8192, 8192]
+            Device OpenCL C version: OpenCL C 3.0
+
+Driver: PTX
+  Total number of PTX devices  : 1
+  Tornado device=2:0
+    PTX -- PTX -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
+            Global Memory Size: 4,0 GB
+            Local Memory Size: 48,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [2147483647, 65535, 65535]
+            Max WorkGroup Configuration: [1024, 1024, 64]
+            Device OpenCL C version: N/A
+```
