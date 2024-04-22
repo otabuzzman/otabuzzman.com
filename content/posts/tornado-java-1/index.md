@@ -1,7 +1,7 @@
 ---
 date: 2024-04-18T13:15:17+02:00
-title: "Java parallelization with TornadoVM (Part 1)"
-description: "Setting things up"
+title: "Java parallelization with TornadoVM"
+description: "Part 1: Setting things up"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
 disable_share: true
