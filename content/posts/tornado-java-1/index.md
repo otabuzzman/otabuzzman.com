@@ -1,7 +1,7 @@
 ---
 date: 2024-04-18T13:15:17+02:00
-title: "Java parallelization with TornadoVM"
-description: "Refactor Java code for parallelization with TornadoVM"
+title: "Java parallelization with TornadoVM (Part 1)"
+description: "Setting things up"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
 disable_share: true
@@ -159,81 +159,43 @@ The signature of `kernel` foresees two buffers for the source and result images.
 
 The new code in `main` is responsible for buffer allocation and transfers and eventually runs `kernel` on the accelerator. This is the minimum code required to make TornadoVM run a piece of Java code on an accelerator. Time to check if the compilation works and maybe even runs successfully. The latter requires a TornadoVM installation and I have postponed it for now.
 
-The former required some adjustments to my Maven setup. First I had to update my `pom.xml` to use Java 21 for compilation (set properties `maven.compiler.source` and `maven.compiler.target` to 21).
+The former required some adjustments to my Maven setup as the first runs of `mvn compile` pointed out. First I had to update my `pom.xml` to use Java 21 for compilation (set properties `maven.compiler.source` and `maven.compiler.target` to 21).
 
 Another requirement for TornadoVM is to enable the preview feature of the JDK (set `<enablePreview>` to `true` for Maven compiler plugin).
 
-Finally, I had to add a repository and dependencies to point to the actual API, i.e. the Jars. The TornadoVM website provides current [sniplets](https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects) for copy and paste.
-
-
-
-```bash
-git clone https://github.com/beehive-lab/TornadoVM.git
-cd TornadoVM
-
-bin/tornadovm-installer --jdk jdk21 --backend opencl,ptx,spirv
-```
-
-In my original setup, the PJ2 library is pre-installed in a separate folder, so I installed TornadoVM the same way. The installation is well [documented](https://tornadovm.readthedocs.io/en/latest/installation.html) and essentially requires cloning the repository and running the Python installer.
+Finally, I had to add a repository and dependencies to point to the actual API, i.e. the Jars. The TornadoVM website provides up to date [sniplets](https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects) for copy and paste. That's what it took to make Maven happy.
 
 ```
-source setvars.sh
-
-tornado --devices
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project chartacaeli-app: Compilation failure: Compilation failure:
+[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[555,51] non-static variable dimt cannot be referenced from a static context
+[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[556,33] non-static variable st cannot be referenced from a static context
+[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[556,43] non-static variable ups cannot be referenced from a static context
+[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[558,59] non-static variable dims cannot be referenced from a static context
+[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[559,41] non-static variable st cannot be referenced from a static context
+... many more lines
 ```
 
-Once finished there is a batch file `setvars.sh` that must be sourced to run the `tornado` CLI, and ask it to list the available accelerators.
+Once the compiler can access the TornadoVM API, there are many complaints due to instance variables referenced by the static `kernel` method. The code in `kernel` was previously in method `main` of a nested class, and as an instance method `main` is allowed to access fields with variables of the surrounding `Artwork` class.
 
+`<LESSON>`This concept will not work any more now having code from an instance method moved to a static one.`</LESSON>`
+
+The static method `kernel` can be considered as a program that runs completely isolated on the accelerator, so everything it needs to do its job must be provided at the start of execution (for example, through method parameters).
+
+Now comes the tedious part of redesigning the original program logic to adapt it to new circumstances. The job is relatively simple to describe: all data needed on the accelerator must be copied somehow, either by memory transfers or via method parameters. The latter is slightly faster but limited to 15 parameters. Memory state, on the other hand, is maintained for the entire task graph on the accelerator. It can therefore be used to store intermediate results that are to be processed sequentially by several methods like `kernel`. In this case, one would simply add task nodes to the task graph as needed, each calling its respective static method.
+
+```java
+// create a TaskGraph with three sequential executions of kernel
+TaskGraph taskGraph = new TaskGraph("s0")
+    .transferToDevice(DataTransferMode.FIRST_EXECUTION, source)
+     // 1st task node: execute kernel on accelerator
+    .task("t0", Artwork.PJ2TextureMapperTvm::kernel, source, result)
+     // 2nd task node: execute kernel on accelerator
+    .task("t1", Artwork.PJ2TextureMapperTvm::kernel, source, result)
+     // 3rd task node: execute kernel on accelerator
+    .task("t2", Artwork.PJ2TextureMapperTvm::kernel, source, result)
+    .transferToHost(DataTransferMode.EVERY_EXECUTION, result);
 ```
-Number of Tornado drivers: 3
-Driver: SPIRV
-  Total number of SPIRV devices  : 1
-  Tornado device=0:0  (DEFAULT)
-    SPIRV -- SPIRV LevelZero - Intel(R) Iris(R) Xe Graphics
-            Global Memory Size: 6,3 GB
-            Local Memory Size: 64,0 KB
-            Workgroup Dimensions: 3
-            Total Number of Block Threads: [512]
-            Max WorkGroup Configuration: [512, 512, 512]
-            Device OpenCL C version:  (LEVEL ZERO)
 
-Driver: OpenCL
-  Total number of OpenCL devices  : 3
-  Tornado device=1:0
-    OPENCL --  [NVIDIA CUDA] -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
-            Global Memory Size: 4,0 GB
-            Local Memory Size: 48,0 KB
-            Workgroup Dimensions: 3
-            Total Number of Block Threads: [1024]
-            Max WorkGroup Configuration: [1024, 1024, 64]
-            Device OpenCL C version: OpenCL C 1.2
+Getting it right is, to some extent, a matter of trial and error. A rule of thumb is that less references of instance variables in code that is subject for execution on accelerators means less work. Another fact is that this job of refactoring is not specific to TornadoVM, but is required for any parallelization on accelerators. A big advantage of TornadoVM is that it does not require leaving the Java ecosystem.
 
-  Tornado device=1:1
-    OPENCL --  [Intel(R) OpenCL Graphics] -- Intel(R) Iris(R) Xe Graphics
-            Global Memory Size: 6,3 GB
-            Local Memory Size: 64,0 KB
-            Workgroup Dimensions: 3
-            Total Number of Block Threads: [512]
-            Max WorkGroup Configuration: [512, 512, 512]
-            Device OpenCL C version: OpenCL C 1.2
-
-  Tornado device=1:2
-    OPENCL --  [Intel(R) OpenCL] -- 11th Gen Intel(R) Core(TM) i5-11320H @ 3.20GHz
-            Global Memory Size: 15,8 GB
-            Local Memory Size: 32,0 KB
-            Workgroup Dimensions: 3
-            Total Number of Block Threads: [8192]
-            Max WorkGroup Configuration: [8192, 8192, 8192]
-            Device OpenCL C version: OpenCL C 3.0
-
-Driver: PTX
-  Total number of PTX devices  : 1
-  Tornado device=2:0
-    PTX -- PTX -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
-            Global Memory Size: 4,0 GB
-            Local Memory Size: 48,0 KB
-            Workgroup Dimensions: 3
-            Total Number of Block Threads: [2147483647, 65535, 65535]
-            Max WorkGroup Configuration: [1024, 1024, 64]
-            Device OpenCL C version: N/A
-```
+How I did it for my specific app and what I was able to benefit from my first parallelization with native CUDA is the subject of part 2 of this report.
