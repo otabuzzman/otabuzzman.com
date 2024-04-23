@@ -1,6 +1,6 @@
 ---
 date: 2024-04-11T23:38:31+02:00
-title: "Java parallelization with CUDA"
+title: "Parallel Java with CUDA"
 description: "A stepwise approach to parallelize Java code"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
