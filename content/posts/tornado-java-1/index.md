@@ -1,188 +1,136 @@
 ---
 date: 2024-04-18T13:15:17+02:00
 title: "Parallel Java with TornadoVM"
-description: "Refactoring a Java app for parallelization with TornadoVM"
+description: "Refactoring for parallelization with TornadoVM"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
 disable_share: true
 draft: true
 ---
 
-This is a report on how I refactored a Java app to use TornadoVM for parallel code execution on an accelerator. The first part describes how I prepared the code for parallel execution and how to add TornadoVM to the build configuration.
+A few years ago I wrote a Java app that creates star maps. It does this by projecting the coordinates of celestial bodies onto a flat canvas. One of the features is to map images of artistic representations of certain star constellations onto the maps. The approach I took to perform the required calculations turned out to be quite slow.
 
-A few years ago I created a Java app that was quite slow. It ran a nested for-loop with some mathematical calculations up to a hundred times with a varying number of up to a few million iterations.
+When I heard about [CUDA](https://developer.nvidia.com/cuda-toolkit) I was excited by the idea of doing computations on graphics cards. I wondered if my slow sequential Java code could be run much faster in parallel on a GPU.
 
-The iterations were independent of each other and therefore this for-loop was an ideal candidate for parallelization. So I decided to offload execution to an accelerator and chose CUDA for this task.
+While searching for a CUDA JNI I came across [Alan Kamnisky's](https://www.cs.rit.edu/~ark/) [Parallel Java 2 library](https://www.cs.rit.edu/~ark/pj2.shtml) (PJ2). Alan is a (now retired) professor at the Rochester Institute of Technology. For his lectures he wrote PJ2 and the accompanying book [Big CPU, Big Data](https://www.cs.rit.edu/~ark/bcbd_2/). There were other CUDA JNI implementations at the time (e.g. jCUDA), but I stuck with PJ2 because it also provides APIs for Java parallelization on multiple CPU cores, as well as abstractions for executing code on multiple nodes.
 
-While searching for a CUDA JNI I came across [Alan Kamnisky](https://www.cs.rit.edu/~ark/)'s [Parallel Java 2 library](https://www.cs.rit.edu/~ark/pj2.shtml) (PJ2). Alan is a (now retired) professor at the Rochester Institute of Technology. For his lectures he wrote PJ2 and the accompanying book [Big CPU, Big Data](https://www.cs.rit.edu/~ark/bcbd_2/). There were other CUDA JNI implementations at the time (e.g. jCUDA), but I stuck with PJ2 because it also provides APIs for Java parallelization on multiple CPU cores, as well as abstractions for executing code on multiple nodes.
+PJ2 made things a lot easier, but there was still a need to write and compile a CUDA kernel. These tasks in turn made it necessary to acquire knowledge of programming NVIDIA accelerators and learn how to use the corresponding tools, APIs, and SDKs. The resulte were a codebase and a build system which both are somewhat confusing and therefore more difficult to maintain than in pure Java. Last but not least, the implementation is tied to NVIDIA. For other, also common accelerators, the learning curve must be gone through again.
 
-PJ2 made things a lot easier, but there was still a need to write and compile a CUDA kernel. These tasks in turn made it necessary to acquire knowledge of programming NVIDIA accelerators and learn how to use the corresponding tools, APIs, and SDKs. The result was a codebase and build system that is somewhat confusing and therefore more difficult to maintain than in pure Java. Last but not least, the implementation is tied to NVIDIA. For other, also common accelerators (e.g. AMD or Intel), the learning curve must be gone through again.
+This is where [TornadoVM](https://www.tornadovm.org/) enters the stage to eliminate these problems.
 
-This is where [TornadoVM](https://www.tornadovm.org/) enters the stage to eliminate these problems. It provides a simple API for scheduling Java code to run on popular accelerators (AMD, Intel, NVIDIA) without requiring programmers to leave the Java ecosystem. TornadoVM does all the heavy lifting of preparing and executing Java code on accelerators, including transferring data between host and device. Sounds tempting. Here is my report on implementing TornadoVM in my Java application.
+It provides a simple API for scheduling Java code to run on popular accelerators (AMD, Intel, NVIDIA) without requiring programmers to leave the Java ecosystem. TornadoVM does all the heavy lifting of preparing and executing Java code on accelerators, including transferring data between host and device.
 
-The for-loop I parallelized projects one planar rectangular area onto another in three-dimensional space. Each area represents an image and is thus defined by a bitmap, with each element representing a pixel.
+One question in a parallelization project is _what_ should be parallelized. The answer is most likely _loops_ if it's a single program that's meant to run on a single computer. In general, loops whose iterations work with data that is independent of the data of the other iterations are candidates for parallelization.
 
-Here is a sketch of the strategy I implemented:
-- Find result image dimensions for source image
-- For each pixel in result image
-  - Find corresponding pixel in source image
-  - Set result pixel to color of source
+However, this comes at a price, because data and code must be transferred to another execution unit (GPU) and the result transferred back from there. The time saved through parallelization must therefore at least compensate for the time required to prepare the GPU, which means that a correspondingly large number of iterations is usually required. Too few iterations may even result in worse execution times overall. However, in that case the candidate may still be suitable for parallel execution on multiple CPU cores instead of a GPU.
 
-`<SOAP>`
-The overall use case of my app is creating star maps. There is a function of mapping star constellations onto pictures, for example, to highlight the constellations of the zodiac through images of an artist's impressions of the corresponding constellations. It turns out that the strategy I used for this function resulted in rather slow execution. That's why I chose parallelization, even though I could have just as easily started looking for a more efficient strategy (or doing both...).
-`</SOAP>`
+Sometimes it is a question of trial and error whether the effort for parallelization is worth it, which should therefore be as low as possible. PJ2 is a great help as it enables parallel execution on multi-core CPUs and NVIDIA GPUs, but the latter of which still requires additional development effort. TornadoVM eliminates the need for GPU programming, not only for NVIDIA, but also for AMD and Intel.
 
-```java
-public class Artwork extends org.chartacaeli.model.Artwork implements PostscriptEmitter {
-    private int[] texture ;  // source image
-    private int dimo, dimp ; // coordinates are o, p
-    private int maxo, maxp ;
+## Porting to TornadoVM
 
-    private int[] mapping ;  // result image
-    private int dims, dimt ; // coordinates are s, t
+||||
+|:---:|:---:|:---:|
+|{{< figure src="andromeda-texture.png">}}|{{< figure src="andromeda-in-bbox.png">}}|{{< figure src="andromeda-mapping.png" width="500">}}|
+|Texture image|Bounding box projection|Final mapping|
 
-    private double ups ; // units per dot
+Back to my app, the approach I took was to a) project the edges of a source image (texture) onto a flat canvas (the projection plane), b) find the rectangular bounding box of the distorted result image (mapping), c) project each pixel of the mapping backwards onto the texture, and d) set the mapping pixel to the color of the pixel found in the texture.
 
-    // transformation matrices
-    private RealMatrix tmH2T ; // transform heaven to texture coordinates
-    private RealMatrix tmM2P ; // transform texture mapping to projection coordinates
+Due to distortions caused by projection properties (e.g. stereographic), it is possible that not every mapping pixel has a corresponding texture pixel. These pixels are defined as background and colored accordingly.
 
-    private Projector projector ;
+Source and result images are termed _texture_ and _mapping_ respectively.
 
-    // spatial plane of texture in heaven's coordinate system
-    private Plane spT ;
+Put to Java there is a `class Artwork` to process each indiviual texture. `Artwork` defines several methods for setting things up and uses subclasses to execute my algorithm on different units by calling their `main` methods.
 
-    // GPU implementation
-    private class PJ2TextureMapperGpu extends Task {
-        public void main( String[] argv ) throws Exception { ... }
+- `PJ2TextureMapperSeq` executes sequential on a single CPU core.
+- `PJ2TextureMapperSmp` executes parallel on available CPU cores.
+- `PJ2TextureMapperGpu` executes parallel on a single GPU.
+
+A configuration switch defines which subclass `Artwork` uses to do the mapping.
+
+I kept the overall architecture and just copied the sequential subclass to make it the TornadoVM implementation. Then I adapted the new subclass named `TVMTextureMapperGpu` step by step to the needs of TornadoVM.
+
+All subclasses extend the abstract class `Task` from PJ2 which requires a single method `main` containing the code supposed for parallel execution. Thus, _adapting TVMTextureMapperGpu_ essentially meant to change the copied code in `TVMTextureMapperGpu::main` for parallel execution by TornadoVM.
+
+A program supposed to execute on a GPU is termed a _kernel_. In TornadoVM, a kernel is a static Java method that TornadoVM prepares and schedules for execution on GPU and whose results it eventually retrieves. This means I need one method for the kernel and another to set up TornadoVM to run the kernel on the GPU.
+
+In my original implementation, the `main` methods contain the code intended for parallelization and could therefore be considered kernels. Therefore, in `TVMTextureMapperGpu` I moved the code from `main` into a new static method called `k3rnel` and put the necessary code for preparing and eventually executing `k3rnel` into `main`.
+
+Texture mapping by the subclasses of `Artwork` goes pixel-wise in a nested `for`-loop with control variables for x and y pixels. The [Loop Parallel API](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) of TornadoVM parallelizes `for`-loops by simply adding `@Parallel` annotations.
+
+For this to work, the kernel code in the body of the `for`-loop must use Java primitive types. TornadoVM does not support custom objects or objects from third-party libraries, e.g. Apache Commons Math. The only allowed object types are [those provided by TornadoVM](https://github.com/otabuzzman/TornadoVM/tree/master/tornado-api/src/main/java/uk/ac/manchester/tornado/api/types), mainly matrices, vectors and arrays thereof.
+
+That said, I had to refactor my kernel to use only primitive types and objects instantiated from classes in the TornadoVM API. I turned custom classes as well as classes from third-parties into static methods called by the kernel, and if necessary, provided instance variables as method parameters. This could be a problem with closed source third party libraries. Mine are all open source and converting code from instance methods to static ones was mostly a matter of copy and paste.
+
+There are some things that do not work with the Loop Parallel API:
+
+- Defining objects outside the body of the `for`-loop and changing their instance variables inside yields runtime errors.
+
+  ```java
+  static void k3rnel() {
+    Float3 st = new Float3( 0, 0, 0 ) ;
+  
+    for ( @Parallel int i=0 ; i<4 ; i++ ) {
+      st.set(0, 1) ; // <--- runtime error
     }
+  }
+  ```
 
-    // CPU cores implementation
-    private class PJ2TextureMapperSmp extends Task {
-        ...
+- Using `return` inside  the `for`-loop body yields runtime errors (`continue` works).
+
+- Using cast operators in an expression inside a subscript operator of TornadoVM API yields runtime error "No resources on GPU".
+  ```java
+  static void k3rnel( IntArray texture, IntArray mapping, int dims, int dimo ) {
+    for ( @Parallel int t=0 ; t<size ; t++ ) {
+      for ( @Parallel int s=0 ; s<size ; s++ ) {
+        mapping[t*dims+s] = texture[(int) p*dimo+(int) o] ; // <--- runtime error
+      }
     }
+  }
+  ``` 
 
-    // sequential implementation
-    private class PJ2TextureMapperSeq extends Task {
-        ...
-    }
-}
-```
+Kernel execution is done in `TVMTextureMapperGpu::main` using TornadoVM's `TaskGraph` class. The API takes a string identifier and defines a set of nodes to execute by calling chained methods to a) transfer memory to the GPU, b) schedule the kernel method for execution, and c) finally pass the results back to Java.
 
-The code that performs the projection is in class `Artwork`. There are several nested classes within `Artwork` that do the real work:
-- `Artwork$PJ2TextureMapperGpu` implements the projection using CUDA,
-- `Artwork$PJ2TextureMapperSmp` uses the available CPU cores, and
-- `Artwork$PJ2TextureMapperSeq` is a sequential implementation without any parallelization.
+The `TornadoExecutionPlan` class prepares the task graph for execution, executes it on the GPU and waits for it to complete.
 
-It's a matter of configuration which of these classes the app actually uses by calling the method `main` of the respective class instance.
+  ```java
+  public void main( String[] argv ) throws Exception {
+  
+    // initialize variables
 
-For simplicity I decided to continue with this concept and simply create another class `Artwork$PJ2TextureMapperTvm` for TornadoVM.
+    // define a task graph as sequence of nodes
+    TaskGraph taskGraph = new TaskGraph("s0")
+    
+      // copy buffer(s) from Java to GPU
+      .transferToDevice( DataTransferMode.FIRST_EXECUTION, buffer, ... )
+    
+      // define kernel to execute with parameters
+      .task( "t0", Artwork.TVMTextureMapperGpu::k3rnel, param, ... )
+    
+      // copy result(s) from GPU to Java
+      .transferToHost(DataTransferMode.EVERY_EXECUTION, result, ... ) ;
+    
+    // prepare task graph for execution on GPU
+    ImmutableTaskGraph immutableTaskGraph = taskGraph.snapshot() ;
+    ornadoExecutionPlan executionPlan = new TornadoExecutionPlan( immutableTaskGraph ) ;
+    
+    executionPlan.execute() ; // run kernel on GPU
 
-The [_Loop Parallel API_](https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api) is for parallelization of for-loops (as the name might imply). In an ideal world, using this API doesn't require much more effort than adding the `@Parallel` annotation to the (sequential) for-loop in question and some code that converts the method containing the for-loop into a kernel and eventually makes that kernel running on an accelerator.
+    // process result
+  }
+  ``` 
 
-```java
-// a new inner class utilizes TornadoVM
-private class PJ2TextureMapperTvm extends Task {
-    private double[] st = new double[] { 0, 0, 1 } ;
-    private Coordinate uv = new Coordinate() ;
+The `task` method of `TaskGraph` accepts up to 15 parameters that it passes to the kernel method on the GPU. The supported types are Java primitives or one of the classes provided by the TornadoVM API. The latter contain a number of memory buffers for data exchange between Java and the GPU. The buffers must be transferred to and from the GPU before and after the task node. Buffers that contain data to be processed by the kernel must be set accordingly before being passed to the task graph. These buffers must be explicitly transferred to the GPU using the `transferToDevice` method of `TaskGraph`. Result buffers that are only written by the GPU do not require a transferToDevice node. Every buffer processed by the GPU must appear in the kernel's parameters. The `transferToHost` method of `TaskGraph` retrieves result buffers from the GPU back to Java.
 
-    private org.chartacaeli.Coordinate eq = new org.chartacaeli.Coordinate( 0, 0, 0 ) ;
-    private double[] ca = new double[] { 0, 0, 0, 1 } ;
+That was essentially all I did to get a TornadoVM version of my former sequential executing texture mapping method. The [full source](https://github.com/otabuzzman/chartacaeli-app/blob/tornado/org/chartacaeli/Artwork.java) of `Artwork` and its contained new subclass `TVMTextureMapperGpu` are in my [repository on GitHub](https://github.com/otabuzzman/chartacaeli-app). I found using the TornadoVM API rather easy. The key points on [programming with TornadoVM](https://tornadovm.readthedocs.io/en/latest/programming.html) fit on a single fairly short webpage.
 
-    // formerly `main´ with TornadoVM extensions
-    static void k3rnel( IntArray texture, IntArray mapping ) {
-        double t0[], op[] ;
-        Coordinate t1 ;
-        Vector3D vca, xca ;
-        double o, p ;
+## Compile with TornadoVM
 
-        // the @Parallel annotation instructs TornadoVM
-        // to parallelize the body
-        for ( @Parallel int t=0 ; dimt>t ; t++ ) {
-            st[1] = t*ups ;
+My app uses Maven to compile and build. I copied [snippets](https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects) provided by TornadoVM into my `pom.xml` file to have Maven fetch the necessary JARs needed to compile and build for TornadoVM.
 
-            for ( @Parallel int s=0 ; dims>s ; s++ ) {
-                st[0] = s*ups ;
+Another tool chain in my setup uses `make` to build with `javac`. I extended the `-classpath` option of `javac` with the TornadoVM JARs and their dependencies. The exact changes are best looked up in the [`Makefile`](https://github.com/otabuzzman/chartacaeli-app/blob/tornado/Makefile) located in the repository.
 
-                t0 = tmM2P.operate( st ) ;
-                uv.x = t0[0] ;
-                uv.y = t0[1] ;
+Compiling the list of JARs was tedious and I would recommend using Maven if possible.
 
-                eq.setCoordinate( projector.project( uv, true ) ) ;
-                t1 = eq.cartesian() ;
+## Execute a TornadoVM app
 
-                vca = new Vector3D( t1.x, t1.y, t1.z ) ;
-                xca = spT.intersection( new Line( Vector3D.ZERO, vca, 1.0e-10 ) ) ;
-                ca[0] = xca.getX() ;
-                ca[1] = xca.getY() ;
-                ca[2] = xca.getZ() ;
-
-                op = tmH2T.operate( ca ) ;
-                o = op[0] ;
-                p = op[1] ;
-
-                if ( 0>o || 0>p || o>=maxo || p>=maxp )
-                    continue ;
-
-                mapping[t*dims+s] = texture[(int) p*dimo+(int) o] ;
-            }
-        }
-    }
-
-    public void main( String[] argv ) throws Exception {
-        IntArray texture = new IntArray(this.texture.length);  // source image buffer
-        IntArray mapping = new IntArray(this.mapping.length) ; // result image buffer
-
-        // copy image (texture) to source buffer here ...
-
-        // create a TaskGraph with a unique id
-        TaskGraph taskGraph = new TaskGraph("s0")
-             // 1st node: copy source image to accelerator
-            .transferToDevice(DataTransferMode.FIRST_EXECUTION, texture)
-             // 2nd node: execute kernel on accelerator
-            .task("t0", Artwork.PJ2TextureMapperTvm::kernel, texture, mapping)
-             // 3rd node: copy projection result to host
-            .transferToHost(DataTransferMode.EVERY_EXECUTION, mapping);
-
-        // make task graph read-only
-        ImmutableTaskGraph immutableTaskGraph = taskGraph.snapshot();
-        // TornadoVM defines plans for task graph execution
-        TornadoExecutionPlan executionPlan = new TornadoExecutionPlan(immutableTaskGraph);
-        // wait to complete execution on accelerator
-        TornadoExecutionResult executionResult = executionPlan.execute();
-
-        // copy result buffer to mapping here ...
-    }
-}
-```
-
-That said I started out with my original sequential implementation and copied the respective nested class into a new one. Then I moved the code from the `main` method into a new static method and named it `k3rnel`. The name of the method could be anything, but _kernel_ is an established name for a program designed to run in parallel on accelerators. This static method is subject to parallelization by TornadoVM. It is actually the code in the body of the nested for-loops it contains. The `@Parallel` annotations cause TornadoVM to compile the body into a kernel and run that kernel on an accelerator.
-
-The signature of `k3rnel` foresees two buffers for the texture and mapping images. The [buffer type](https://tornadovm.readthedocs.io/en/latest/programming.html#data-representation) `IntArray` is one of several from the TornadoVM API that can be copied between host and accelerator.
-
-The new code in `main` is responsible for buffer allocation and transfers and eventually runs `k3rnel` on the accelerator. This is the minimum code required to make TornadoVM run a piece of Java code on an accelerator. Time to check if the compilation works and maybe even runs successfully. The latter requires a TornadoVM installation and I have postponed it for now.
-
-The former required some adjustments to my Maven setup as a run of `mvn compile` pointed out. First I had to update my `pom.xml` to use Java 21 for compilation (set properties `maven.compiler.source` and `maven.compiler.target` to 21).
-
-Another requirement for TornadoVM is to enable the preview feature of the JDK (set `<enablePreview>` to `true` for the Maven compiler plugin).
-
-Finally, I had to add a repository and dependencies to point to the actual API, i.e. the Jars. The TornadoVM website provides up to date [sniplets](https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects) for copy and paste. That's what it took to make Maven happy.
-
-```
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project chartacaeli-app: Compilation failure: Compilation failure:
-[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[555,51] non-static variable dimt cannot be referenced from a static context
-[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[556,33] non-static variable st cannot be referenced from a static context
-[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[556,43] non-static variable ups cannot be referenced from a static context
-[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[558,59] non-static variable dims cannot be referenced from a static context
-[ERROR] /C:/Users/iuerg/src/chartacaeli-app/org/chartacaeli/Artwork.java:[559,41] non-static variable st cannot be referenced from a static context
-... many more lines
-```
-
-Once the compiler had access to the TornadoVM API, there were many complaints due to instance variables referenced by the static `k3rnel` method. This was because of the fact that the code in static `k3rnel` came from `main` which was an instance method with access to instance variables of surrounding classes.
-
-`<LESSON>`This concept of sharing data will not work any more now having code from an instance method moved to a static one.`</LESSON>`
-
-The static `k3rnel` can be considered as a program that runs completely isolated on the accelerator, so everything it needs to do its job must be provided at the start of execution (for example, through method parameters).
-
-This is where refactoring begins, the tedious part of redesigning the original program logic to adapt it to new circumstances. The job is rather simple to describe: all data needed on the accelerator must be copied somehow, either by memory transfers or via method parameters. The latter is slightly faster but limited to 15 parameters. I used memory buffers to transfer the values of composite variables (e.g. matrices), and provided scalars and buffer references via method parameters. And there's more to do: TornadoVM doesn't support objects. This means that I had to reimplement my custom classes, as well as those I used from imported libraries (e.g. Apache Commons), in order to use them in the static `k3rnel`.
-
+First, TornadoVM must be installed. The process is well documented on the TornadoVM website and works smoothly on Linux, macOS and Windows. After installation, running apps requires replacing the `java` command with `tornado` which is a Python script. It sets up an execution environment for TornadoVM and finally executes the `java` command with appropriate options.
