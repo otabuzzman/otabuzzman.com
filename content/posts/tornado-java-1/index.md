@@ -133,4 +133,4 @@ Compiling the list of JARs was tedious and I would recommend using Maven if poss
 
 ## Execute a TornadoVM app
 
-First, TornadoVM must be installed. The process is well documented on the TornadoVM website and works smoothly on Linux, macOS and Windows. After installation, running apps requires replacing the `java` command with `tornado` which is a Python script. It sets up an execution environment for TornadoVM and finally executes the `java` command with appropriate options.
+First, TornadoVM must be installed. This is well documented on the [TornadoVM website](https://tornadovm.readthedocs.io/en/latest/installation.html) and works smoothly on Linux, macOS and Windows. After installation, running apps requires replacing the `java` command with `tornado` which is a Python script. It sets up an execution environment for TornadoVM and finally executes the `java` command with appropriate options.
