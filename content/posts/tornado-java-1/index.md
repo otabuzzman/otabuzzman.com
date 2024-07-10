@@ -30,8 +30,8 @@ Sometimes it is a question of trial and error whether the effort for paralleliza
 
 {{< figure src="andromeda-texture.png" caption="Texture image" >}}
 {{< figure src="andromeda-in-bbox.png" caption="Mapping in bounding box" >}}
-{{< figure src="andromeda-mapping.png" caption="Mapping with matching background" >}}|
-{{< figure src="andromeda-starmap.png" caption="Mapping shown in star map" >}}|
+{{< figure src="andromeda-mapping.png" caption="Mapping with matching background" >}}
+{{< figure src="andromeda-starmap.png" caption="Mapping shown in star map" >}}
 
 The approach I took for my app was a) project the edges of a source image (texture) onto a flat canvas (the projection plane), b) find the rectangular bounding box of the distorted result image (mapping), c) project each pixel of the mapping backwards onto the texture, and d) set the mapping pixel to the color of the pixel found in the texture.
 
@@ -149,9 +149,64 @@ Because I am on Windows and `tornado` is a Python script I have to prepend the P
 If I run `tornado` without any special options, the app will run on the default accelerator. On my notebook, this is an NVIDIA graphics card. But there is also an integrated Intel GPU that is suitable for parallel execution, and last but not least, the 8 cores of my CPU. Since I built TornadoVM for all supported accelerators, my app has access to all the execution units in my notebook, which I simply select with a Java property when calling `tornado`.
 
 ```bash
+python %TORNADO_SDK%\bin\tornado --devices
+
+Number of Tornado drivers: 3
+Driver: SPIRV
+  Total number of SPIRV devices  : 1
+  Tornado device=0:0  (DEFAULT)
+    SPIRV -- SPIRV LevelZero - Intel(R) Iris(R) Xe Graphics
+            Global Memory Size: 6,3 GB
+            Local Memory Size: 64,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [512]
+            Max WorkGroup Configuration: [512, 512, 512]
+            Device OpenCL C version:  (LEVEL ZERO)
+
+Driver: OpenCL
+  Total number of OpenCL devices  : 3
+  Tornado device=1:0
+    OPENCL --  [NVIDIA CUDA] -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
+            Global Memory Size: 4,0 GB
+            Local Memory Size: 48,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [1024]
+            Max WorkGroup Configuration: [1024, 1024, 64]
+            Device OpenCL C version: OpenCL C 1.2
+
+  Tornado device=1:1
+    OPENCL --  [Intel(R) OpenCL Graphics] -- Intel(R) Iris(R) Xe Graphics
+            Global Memory Size: 6,3 GB
+            Local Memory Size: 64,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [512]
+            Max WorkGroup Configuration: [512, 512, 512]
+            Device OpenCL C version: OpenCL C 1.2
+
+  Tornado device=1:2
+    OPENCL --  [Intel(R) OpenCL] -- 11th Gen Intel(R) Core(TM) i5-11320H @ 3.20GHz
+            Global Memory Size: 15,8 GB
+            Local Memory Size: 32,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [8192]
+            Max WorkGroup Configuration: [8192, 8192, 8192]
+            Device OpenCL C version: OpenCL C 3.0
+
+Driver: PTX
+  Total number of PTX devices  : 1
+  Tornado device=2:0
+    PTX -- PTX -- NVIDIA GeForce RTX 3050 Ti Laptop GPU
+            Global Memory Size: 4,0 GB
+            Local Memory Size: 48,0 KB
+            Workgroup Dimensions: 3
+            Total Number of Block Threads: [2147483647, 65535, 65535]
+            Max WorkGroup Configuration: [1024, 1024, 64]
+            Device OpenCL C version: N/A
 ```
 
-The `tornado -devices` command lists the known devices. To select a specific execution unit of my notebook, I set its ID from the device list as the value of a property. The name of the property is composed of the string IDs of the task graph (`"s0"`), the task node (`"t0"`) (see code fragment for `TVMTextureMapperGpu::main` above) and the `device` literal. Together, on my box this yields `python tornado --jvm -Ds0.t0.device=1:0 ...` to execute on the NVIDIA GPU using TornadoVM's OpenCL backend.
+The `tornado --devices` command lists the known devices. To select a specific execution unit of my notebook, I set the device ID from the device list as the value of a property (e.g. `1:0` for the NVIDIA GPU using the OpenCL driver). The name of the property is a dot-concatenation of the string IDs of the task graph (`"s0"`), the task node (`"t0"`), and the `device` literal (e.g. `s0.t0.device` for the code fragment shown above). Put together for my box the command `python tornado --jvm -Ds0.t0.device=1:0 ...` will execute my app on the NVIDIA GPU of my notebook. Using device ID `0:0` will execute on the integrated Intel GPU and `1:2` will use the CPU cores.
+
+Using device `2:0` will fail because my app uses the math function `atan2` which is not supported by the PTX driver. TornadoVM reports the error and runs the kernel on the CPU instead.
 
 ## Measured execution times
 
@@ -161,4 +216,4 @@ The table lists the milliseconds spent by the subclasses to calculate the mappin
 
 There is virtually no difference in execution times on an NVIDIA GPU, the only accelerator supported by both PJ2 and TornadoVM, and so it's not really a surprise.
 
-The main difference for me is the time it took to implement both variants. It took several months for PJ2, but only a few weeks for TornadoVM. In addition, the TornadoVM version runs on various accelerators without any additional effort.
+For me, the main difference is the time required to implement both variants. It took several months for PJ2, but only a few weeks for TornadoVM. In addition, the TornadoVM version runs on various accelerators without any additional effort.
