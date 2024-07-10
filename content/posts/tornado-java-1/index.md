@@ -28,10 +28,10 @@ Sometimes it is a question of trial and error whether the effort for paralleliza
 
 ## Porting to TornadoVM
 
-{{< figure src="andromeda-texture.png" caption="Texture image" >}}
-{{< figure src="andromeda-in-bbox.png" caption="Mapping in bounding box" >}}
-{{< figure src="andromeda-mapping.png" caption="Mapping with matching background" >}}
-{{< figure src="andromeda-starmap.png" caption="Mapping shown in star map" >}}
+|||
+|:---:|:---:|
+|{{< figure src="andromeda-texture.png" class="f6 measure-narrow" caption="Texture image" >}}|{{< figure src="andromeda-in-bbox.png" class="f6 measure-narrow" caption="Mapping in bounding box" >}}|
+|{{< figure src="andromeda-mapping.png" class="f6 measure-narrow" caption="Bounding box set to background" >}}|{{< figure src="andromeda-starmap.png" class="f6 measure-narrow" caption="Mapping shown in star map" >}}|
 
 The approach I took for my app was a) project the edges of a source image (texture) onto a flat canvas (the projection plane), b) find the rectangular bounding box of the distorted result image (mapping), c) project each pixel of the mapping backwards onto the texture, and d) set the mapping pixel to the color of the pixel found in the texture.
 
@@ -210,7 +210,11 @@ Using device `2:0` will fail because my app uses the math function `atan2` which
 
 ## Measured execution times
 
-The table lists the milliseconds spent by the subclasses to calculate the mappings of the example star map. There is a column for each subclass subdivived into varius measures. The `parallelTask` column lists the total time spent to execute the `main` method of a subclass.
+The table lists the milliseconds that the subclasses took to calculate the images of the example star map. For each subclass, there is a column divided into the accelerators of my notebook. The `parallelTask` column lists the total time it took to execute the `main` method of a subclass.
+
+[![Measured execution times](measures.png)](measures.pdf "Click to view PDF")
+
+The `gain` columns to the right of the accelerator columns relate the times of the respective TornadoVM subclass to those of PJ2. The values ​​vary between faster and slower than PJ2, but all indicate faster execution than on multiple CPU cores. One possible reason is the extra time TornadoVM needs to compile the kernel just-in-time from Java code into an executable for the selected accelerator. Another reason could be that some texture mappings are not _hard enough_ for parallelization with TornadoVM.
 
 ## Conclusion
 
