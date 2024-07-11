@@ -1,11 +1,11 @@
 ---
-date: 2024-07-10T13:15:17+02:00
+date: 2024-07-11T13:17:17+56:00
 title: "Parallel Java with TornadoVM"
 description: "Refactoring for parallelization with TornadoVM"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "GPGPU", "TornadoVM", "AMD", "Intel", "NVIDIA"]
 disable_share: true
-draft: true
+draft: false
 ---
 
 A few years ago I wrote a Java app that creates star maps ([example](https://chartacaeli.org/artistic-star-chart.pdf)). It does this by projecting the coordinates of celestial bodies onto a flat canvas. One of the features is to map images of artistic representations of certain star constellations onto the maps. The approach I took to perform the required calculations turned out to be quite slow.
@@ -213,8 +213,6 @@ Using device `2:0` will fail because my app uses the math function `atan2` which
 The table lists the milliseconds that the subclasses took to calculate the images of the example star map. For each subclass, there is a column divided into the accelerators of my notebook. The `parallelTask` column lists the total time it took to execute the `main` method of a subclass.
 
 [![Measured execution times](measures.png)](measures.pdf "Click to view PDF")
-
-{{< figure src="measures.png" link="measures.pdf" class="f4 measure-narrow" caption="Click image for full table PDF" alt="Measured execution times" >}}
 
 The `gain` columns to the right of the accelerator columns relate the times of the respective TornadoVM subclass to those of PJ2. The values scatter between faster and slower than PJ2, but all indicate faster execution than on multiple CPU cores. One possible reason for the scatter is the extra time TornadoVM needs to compile the kernel just-in-time from Java code into an executable for the selected accelerator. Another reason could be that some texture mappings are just not _hard enough_ for parallelization with TornadoVM.
 
