@@ -15,6 +15,7 @@ publishDir = "/opt/otabuzzman/www"
   [[module.imports.mounts]]
     source = 'content'
     target = 'content'
+    excludeFiles = ['posts/**/backup']
   [[module.imports.mounts]]
     source = 'static'
     target = 'static'
