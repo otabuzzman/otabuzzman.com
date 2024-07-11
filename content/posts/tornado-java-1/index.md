@@ -14,11 +14,11 @@ When I heard about [CUDA](https://developer.nvidia.com/cuda-toolkit) I was excit
 
 While searching for a CUDA JNI I came across [Alan Kamnisky's](https://www.cs.rit.edu/~ark/) [Parallel Java 2 library](https://www.cs.rit.edu/~ark/pj2.shtml) (PJ2). Alan is a (now retired) professor at the Rochester Institute of Technology. For his lectures he wrote PJ2 and the accompanying book [Big CPU, Big Data](https://www.cs.rit.edu/~ark/bcbd_2/). There were other CUDA JNI implementations at the time (e.g. jCUDA), but I stuck with PJ2 because it also provides APIs for Java parallelization on multiple CPU cores, as well as abstractions for executing code on multiple nodes.
 
-PJ2 made things a lot easier, but there was still a need to write and compile a CUDA kernel. These tasks in turn made it necessary to acquire knowledge of programming NVIDIA accelerators and learn how to use the corresponding tools, APIs, and SDKs. I ended up with a somewhat confusing codebase and build system which both are more difficult to maintain than in pure Java. Last but not least, the implementation is tied to NVIDIA. For other, also common accelerators, the learning curve must be gone through again.
+PJ2 made things a lot easier, but there was still a need to write and compile a CUDA kernel. This in turn required learning how to use the necessary tools and APIs in NVIDIA's CUDA Toolkit. I ended up with a somewhat confusing codebase and build system which both are more difficult to maintain than in pure Java. Last but not least, the implementation is tied to NVIDIA. For other, also common accelerators, the learning curve must be gone through again.
 
 ## TornadoVM
 
-TornadoVM provides a simple API for scheduling Java code to run on popular accelerators (AMD, Intel, NVIDIA) without requiring programmers to leave the Java ecosystem. TornadoVM does all the heavy lifting of preparing and executing Java code on accelerators, including transferring data between host and device.
+[TornadoVM](https://www.tornadovm.org) provides a simple API for scheduling Java code to run on popular accelerators (AMD, Intel, NVIDIA) without requiring programmers to leave the Java ecosystem. TornadoVM does all the heavy lifting of preparing and executing Java code on accelerators, including transferring data between host and device.
 
 One question in a parallelization project is _what_ should be parallelized. The answer is most likely _loops_ if it's a single program that's meant to run on a single computer. In general, loops whose iterations work with data that is independent of the data of the other iterations are candidates for parallelization.
 
@@ -214,10 +214,8 @@ The table lists the milliseconds that the subclasses took to calculate the image
 
 [![Measured execution times](measures.png)](measures.pdf "Click to view PDF")
 
-The `gain` columns to the right of the accelerator columns relate the times of the respective TornadoVM subclass to those of PJ2. The values ​​vary between faster and slower than PJ2, but all indicate faster execution than on multiple CPU cores. One possible reason is the extra time TornadoVM needs to compile the kernel just-in-time from Java code into an executable for the selected accelerator. Another reason could be that some texture mappings are not _hard enough_ for parallelization with TornadoVM.
+{{< figure src="measures.png" link="measures.pdf" class="f4 measure-narrow" caption="Click image for full table PDF" alt="Measured execution times" >}}
 
-## Conclusion
+The `gain` columns to the right of the accelerator columns relate the times of the respective TornadoVM subclass to those of PJ2. The values scatter between faster and slower than PJ2, but all indicate faster execution than on multiple CPU cores. One possible reason for the scatter is the extra time TornadoVM needs to compile the kernel just-in-time from Java code into an executable for the selected accelerator. Another reason could be that some texture mappings are just not _hard enough_ for parallelization with TornadoVM.
 
-There is virtually no difference in execution times on an NVIDIA GPU, the only accelerator supported by both PJ2 and TornadoVM, and so it's not really a surprise.
-
-For me, the main difference is the time required to implement both variants. It took several months for PJ2, but only a few weeks for TornadoVM. In addition, the TornadoVM version runs on various accelerators without any additional effort.
+Running my app on the Intel accelerator that is also built into my notebook shows similar results to the NVIDIA GPU. I found this interesting because I didn't really had that GPU on my radar. I'm wondering if I could use it in addition to NVIDIA's _main_ GPU by leveraging TornadoVM's [multi-device execution](https://tornadovm.readthedocs.io/en/latest/multi-device.html) feature.
