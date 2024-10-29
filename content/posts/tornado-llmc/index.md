@@ -5,7 +5,7 @@ description: "A lab on executing GPT-2 in a Java app on accelerators"
 featured_image: "featured_image.jpg"
 tags: ["CUDA", "parallelcomputing", "Java", "LLM"]
 disable_share: true
-draft: true
+draft: false
 ---
 
 [TornadoVM](https://github.com/beehive-lab/TornadoVM) lets Java programs execute on accelerators. [llm.c](https://github.com/karpathy/llm.c) is a plain C implementation of OpenAI‘s GPT-2, the LLM that powered the 1st ChatGPT. Released in fall ‘22, it sparked an AI hype that still lasts. Both are not a perfect fit at first glance, but a Java version of llm.c could make them friends, so I tried to bring them together.
