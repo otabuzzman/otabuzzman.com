@@ -21,7 +21,7 @@ The port is in the `main` branch of [llm.java](https://github.com/otabuzzman/llm
 |llm.c/ Java|yes|3656|
 |llm.c/ Java|no|4225|
 
-The layer methods contained in the stack are ideal for parallelization because they all contain nested `for`-loops, and TornadoVM is designed to run the body of a `for`-loop in parallel on an accelerator (to make a long story short).
+The layer methods that make up the stack are ideal for parallelization because they all contain nested `for`-loops, and TornadoVM is designed to run the body of a `for`-loop in parallel on an accelerator (to make a long story short).
 
 ## TornadoVM with a single task graph
 
@@ -85,14 +85,14 @@ The positive thing is that I had now made all the code changes required for Torn
 1. replaced the Java Math API with the TornadoMath API,
 2. replaced Java Buffers for `int`s and `float`s by those that TornadoVM can move between host and accelerator (e.g. replaced `IntBuffer` (Java) with `IntArray` (TornadoVM)),
 3. annotated `for`-loops inside the layer methods to be parallelized by TornadoVM,
-4. appropriate TornadoVM buffers added to the signatures of the layer methods,
+4. added appropriate TornadoVM buffers to the signatures of the layer methods,
 5. code changes to execute the task graph instead of individual layer methods.
 
 ## TornadoVM with multiple task graphs
 
-I set up another configuration to allows a seamless mix of original layer methods and TornadoVM tasks and let me proceed layer by layer and fix errors as they occur.
+I set up another configuration that allows a seamless mix of original layer methods and TornadoVM tasks and let me proceed layer by layer and fix errors as they occur.
 
-I defined a task graph for a single transformer block before iterating over the stack of blocks. At first the task graph would contain only the task for the first layer method in a transformer block. Each iteration would then run the partial block in the task graph followed by the original layer methods for missing tasks.
+I defined a task graph for a single transformer block before iterating over the stack of blocks. At first the task graph would contain only the task for the first layer method in a transformer block. Each iteration would then run the partial block in the task graph followed by the original layer methods for remaining tasks.
 
 ```Java
 // code snippet
@@ -143,7 +143,7 @@ TornadoExecutionPlan output_runner = new TornadoExecutionPlan(output_layer.snaps
 output_runner.execute();
 ```
 
-The layer methods receive array indices via method parameters which reflect the current layer. The original code updates these indices as it iterates layer by layer over the transformer blocks. For the now predefined transformer block, its (now as well predefined) parameters must become indices pointing to the actual (real) indices, the latter updated with each iteration (just as the original code did). This additional level of indirection requires another buffer to be transferred before each task graph execution.
+The layer methods receive array indices via method parameters which reflect the current layer. The original code updates these indices as it iterates layer by layer over the transformer blocks. For the now predefined transformer block, its (now as well predefined) parameters must therefore  become indices pointing to the actual (real) indices, the latter updated with each iteration (just as the original code did). This additional level of indirection requires another buffer `ind.tensors` to be transferred before each task graph execution.
 
 This approach eventually worked and let me execute the full stack on accelerators with TornadoVM. It's in the [`tornado-multi-tg` branch](https://github.com/otabuzzman/llm.java/blob/tornado-multi-tg/src/com/otabuzzman/llmj/GPT2.java) of the llm.java repo.
 
@@ -224,6 +224,8 @@ private static void attention_forward(FloatArray acts, IntArray pointers, int ou
 
 ## Conclusion
 
-This was my second project to refactor a codebase to implement TornadoVM. The logic was more complex this time, but it was still no problem to use the TornadoVM APIs.
+This was my 2nd project to refactor a codebase to implement TornadoVM. The logic was more complex this time, but it was still no problem to use the TornadoVM APIs.
+
+The measures show that TornadoVM sped up the plain C implementation by about 35 percent in my particular setup. The model I used has 117 million parameters, which is quite small compared to the billions of common models. Larger models may produce better results as they require more processing power.
 
 Playing around with the code structure of the task methods to get TornadoVM to render proper kernels was challenging, but also fun – and that’s what counts...
