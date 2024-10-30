@@ -224,4 +224,6 @@ private static void attention_forward(FloatArray acts, IntArray pointers, int ou
 
 ## Conclusion
 
-Lorem ipsum...
+This was my second project to refactor a codebase to implement TornadoVM. The logic was more complex this time, but it was still no problem to use the TornadoVM APIs.
+
+Playing around with the code structure of the task methods to get TornadoVM to render proper kernels was challenging, but also fun – and that’s what counts...
