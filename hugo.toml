@@ -23,12 +23,17 @@ publishDir = "/opt/otabuzzman/www"
     source = 'layouts'
     target = 'layouts'
 
-[[params.ananke_socials]]
-  name = "github"
-  url = "https://github.com/otabuzzman"
-[[params.ananke_socials]]
-  name = "twitter"
-  url = "https://twitter.com/otabuzzman"
-[[params.ananke_socials]]
-  name = "linkedin"
-  url = "https://www.linkedin.com/in/juergenschuck/"
+# follow and share on social media
+[ananke.social.follow]
+  new_window_icon = true
+  networks = ["github", "x-twitter", "linkedin"]
+[ananke.social.share]
+  sharetext = true
+  networks = ["x-twitter", "linkedin"]
+
+[params.ananke.social.github]
+  username = "otabuzzman"
+[params.ananke.social.x-twitter]
+  username = "otabuzzman"
+[params.ananke.social.linkedin]
+  username = "juergenschuck"
