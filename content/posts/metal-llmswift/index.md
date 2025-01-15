@@ -8,8 +8,6 @@ disable_share: true
 draft: true
 ---
 
-
-
 [Metal](https://developer.apple.com/metal/) is Apple's low-level API for GPU programming and [llm.c](https://github.com/karpathy/llm.c) is Andrej Karpathy's plain C and CUDA implementation of GPT-2. The C version leverages [OpenMP](https://www.openmp.org/) to parallelize the layer functions on the CPU cores. The CUDA version is highly optimized for multi-node multi-accelerator parallelization on NVIDIA GPUs using [Open MPI](https://www.open-mpi.org/) and [NCCL](https://developer.nvidia.com/nccl). I once ported the C version to Swift and used [Grand Central Dispatch](https://developer.apple.com/documentation/DISPATCH) (GCD) for CPU parallelization. My Xcode project in [llm.swift](https://github.com/otabuzzman/llm.swift) is set to generate fast code and to skip bounds checks using the Swift compiler option `-Ounchecked`. The C version compiled with `clang` runs about 6 times faster than Swift.
 
 **Measures on MacBook Pro M2**
