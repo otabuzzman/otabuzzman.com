@@ -24,10 +24,10 @@ publishDir = "/opt/otabuzzman/www"
     target = 'layouts'
 
 # follow and share on social media
-[ananke.social.follow]
+[params.ananke.social.follow]
   new_window_icon = true
   networks = ["github", "x-twitter", "linkedin"]
-[ananke.social.share]
+[params.ananke.social.share]
   sharetext = true
   networks = ["x-twitter", "linkedin"]
 
