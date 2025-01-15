@@ -7,31 +7,28 @@ Add or update Hugo-compliant content to the repository and run the [GA Build Sit
 
 Alternatively, you can set up a local Hugo site to check new content before updating the repository and running the workflow.
 
-- Install [Go](https://golang.org/doc/install)
-- Install [Hugo extended](https://github.com/gohugoio/hugo/releases/tag/v0.111.3)
+- Install [Go](https://golang.org/doc/install) 1.23.4
+- Install [Hugo extended](https://github.com/gohugoio/hugo/releases/tag/v0.134.3) 0.134.3
 
 - Set up local website:
 
   ```bash
   WEBSITE=otabuzzman.com
-  
+
   git clone https://github.com/otabuzzman/${WEBSITE}.git
   cd $WEBSITE
   
   # create otabuzzman.com
   hugo new site $WEBSITE
   cd $WEBSITE
-  
-  # use Hugo with modules
-  hugo mod init $WEBSITE
-  
-  # initiate hugo modules
-  hugo mod get github.com/otabuzzman/$WEBSITE
-  
+
+  # set configuration
+  cp ../hugo.toml hugo.toml
+
   # upgrade repo to website
-  tar --exclude=config.toml -cf - . | ( cd .. ; tar xf - )
-  cd ..
-  
+  hugo mod init $WEBSITE
+  hugo mod tidy
+
   # run Hugo webserver
   hugo server -D
   ```
@@ -92,7 +89,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   done
 
   # Go
-  tgz=go1.18.linux-amd64.tar.gz
+  tgz=go1.23.4.linux-amd64.tar.gz
   src=https://go.dev/dl/$tgz
   wget -q $src
 
@@ -106,7 +103,7 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 3. Install Hugo extended
 
   ```
-  # get binary from https://github.com/gohugoio/hugo/releases/
+  # get binary from https://github.com/gohugoio/hugo/releases/tag/v0.134.3
   # and unpack in ~/go/bin
   chmod 775 ~/go/bin/hugo
 
@@ -116,6 +113,6 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 
 3. Configure Hugo
 
-  As described in [Publish content](#Publish-content), bullet point _Set up local Hugo configuration_.
+  As described in [Publish content](#Publish-content), bullet point _Set up local website_.
 
 4. Open [otabuzzman.com](https://otabuzzman.com)
