@@ -2,7 +2,7 @@
 date: 2025-01-12T19:44:21+01:00
 title: "Metal parallelization of llm.c"
 description: "An outline about a Metal implementation for llm.c"
-featured_image: "featured_image.jpg"
+featured_image: "featured-image.jpg"
 tags: ["parallelcomputing", "Swift", "LLM", "Metal", "Apple", "macOS", "iOS"]
 disable_share: true
 draft: true
