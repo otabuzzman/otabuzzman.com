@@ -1,5 +1,5 @@
 ---
-title: 'All Posts'
+title: ' '
 description: ' '
 featured_image: '/images/squares.png'
 ---
