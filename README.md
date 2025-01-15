@@ -93,8 +93,9 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
   src=https://go.dev/dl/$tgz
   wget -q $src
 
-  sudo rm -rf /usr/local/go
-  sudo tar -C /usr/local -xzf $tgz
+  dst=/usr/local
+  sudo rm -rf $dst/go
+  sudo tar -C $dst -xzf $tgz
 
   echo "export PATH=/usr/local/go/bin:$PATH" >>~/.profile
   # logoff/ login to take effect
@@ -103,11 +104,16 @@ Setup on Virtual Private Server (VPS) running Ubuntu 18.04. Provider is [contabo
 3. Install Hugo extended
 
   ```
-  # get binary from https://github.com/gohugoio/hugo/releases/tag/v0.134.3
-  # and unpack in ~/go/bin
-  chmod 775 ~/go/bin/hugo
+  # Hugo
+  tgz=hugo_extended_0.134.3_linux-amd64.tar.gz
+  src=https://github.com/gohugoio/hugo/releases/tag/v0.134.3
+  wget -q $src
 
-  echo "export PATH=~/go/bin:$PATH" >>~/.profile
+  dst=~/go/bin
+  ( cd $dst ; tar zxf ~/$tgz hugo )
+  chmod 775 ~$dst/hugo
+
+  echo "export PATH=$dst:$PATH" >>~/.profile
   # logoff/ login to take effect
   ```
 
