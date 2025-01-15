@@ -3,7 +3,7 @@ languageCode = 'en-us'
 title = "otabuzzman's blog"
 
 # use the beautiful Ananke theme
-theme = ["github.com/theNewDynamic/gohugo-theme-ananke"]
+theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
 
 # publish to Apache web server
 publishDir = "/opt/otabuzzman/www"
@@ -19,6 +19,9 @@ publishDir = "/opt/otabuzzman/www"
   [[module.imports.mounts]]
     source = 'static'
     target = 'static'
+  [[module.imports.mounts]]
+    source = 'layouts'
+    target = 'layouts'
 
 [[params.ananke_socials]]
   name = "github"
