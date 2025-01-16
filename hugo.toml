@@ -8,6 +8,10 @@ theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
 # publish to Apache web server
 publishDir = "/opt/otabuzzman/www"
 
+[markup.goldmark.parser.attribute]
+# enable mardown attributes
+block = true
+
 # use content from repository
 [module.imports]
   path = 'github.com/otabuzzman/otabuzzman.com'
