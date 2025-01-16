@@ -3,7 +3,7 @@ date: 2025-01-12T19:44:21+01:00
 title: "Metal parallelization of llm.c"
 description: "An outline about a Metal implementation for llm.c"
 featured_image: "featured-image.jpg"
-tags: ["parallelcomputing", "Swift", "LLM", "Metal", "Apple", "macOS", "iOS"]
+tags: ["parallelcomputing", "Swift", "LLM", "llm.c", "CUDA", "Metal", "Apple", "macOS", "iOS"]
 draft: false
 ---
 
@@ -15,8 +15,8 @@ I once ported the C version to Swift and used [Grand Central Dispatch](https://d
 
 |llm.c|llm.swift|
 |:---:|:---:|
-|2230|12256 (ms)|
-{ class="center f5" }
+|2.230 s|12.256 s|
+{ class="center w-75 f5" }
 
 The times are the average time of the 10 loops that `test_gpt2` executes and logs to stdout for each loop. The reason for the difference in execution times might be my code, which follows llm.c almost one-to-one except for file I/O and GCD. Model data access uses pointer arithmetic just like llm.c. Anyway, I've postponed looking for the root cause and moved on to trying Metal for parallelization to see how far I can get with it.
 
@@ -155,12 +155,12 @@ When the GPU layer functions return dispatched shaders must be committed to star
 
 |Program|Version|llm.swift|llm.c|
 |:---:|:---:|:---:|:---:|
-|encoder_forward|2|2.0 (ms)|0.0014|
+|encoder_forward|2|2.0 ms|0.0014 ms|
 { class="f5" }
 llm.swift: Metal version on MacBook Pro M2{{< line_break >}}
-llm.c: CUDA version on Lenovo IdeaPad with NVIDIA RTX 3030 Ti
+llm.c: CUDA version on Lenovo IdeaPad with NVIDIA RTX 3050 Ti
 { class="f6" }
 
-Obviously there are differences between the two systems that make the M2 (2023) chip look better than the RTX 3030 Ti (2021). One difference is the unified memory feature, which allows the M2 to share Metal buffers between CPU and GPU, while the 3050 has to copy the buffers. On the other hand, `encoder_forward` calls a single, rather simple shader with little data, and the 3050 might perform better in a more realistic configuration.
+Obviously there are differences between the two systems that make the M2 (2023) chip look better than the RTX 3050 Ti (2021). One difference is the unified memory feature, which allows the M2 to share Metal buffers between CPU and GPU, while the 3050 has to copy the buffers. On the other hand, `encoder_forward` calls a single, rather simple shader with little data, and the 3050 might perform better in a more realistic configuration.
 
-Currently I only have GPU layer functions for the encoder layer of the forward pass. Let's see how the rest behaves, especially when both layer stacks are running entirely on the GPU.
+Currently I only have a GPU layer function for the encoder layer of the forward pass. Let's see how llm.swift behaves with more functions to come until both layer stacks run entirely on the GPU.
