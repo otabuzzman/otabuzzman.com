@@ -16,7 +16,7 @@ I once ported the C version to Swift and used [Grand Central Dispatch](https://d
 |llm.c|llm.swift|
 |:---:|:---:|
 |2230|12256 (ms)|
-{ class="center w-75 f5" }
+{ class="center f5" }
 
 The times are the average time of the 10 loops that `test_gpt2` executes and logs to stdout for each loop. The reason for the difference in execution times might be my code, which follows llm.c almost one-to-one except for file I/O and GCD. Model data access uses pointer arithmetic just like llm.c. Anyway, I've postponed looking for the root cause and moved on to trying Metal for parallelization to see how far I can get with it.
 
@@ -156,10 +156,10 @@ When the GPU layer functions return dispatched shaders must be committed to star
 |Program|Version|llm.swift|llm.c|
 |:---:|:---:|:---:|:---:|
 |encoder_forward|2|2.0 (ms)|0.0014|
-{ class="center w-75 f5" }
+{ class="f5" }
 llm.swift: Metal version on MacBook Pro M2{{< line_break >}}
 llm.c: CUDA version on Lenovo IdeaPad with NVIDIA RTX 3030 Ti
-{ class="center w-75 f6" }
+{ class="f6" }
 
 Obviously there are differences between the two systems that make the M2 (2023) chip look better than the RTX 3030 Ti (2021). One difference is the unified memory feature, which allows the M2 to share Metal buffers between CPU and GPU, while the 3050 has to copy the buffers. On the other hand, `encoder_forward` calls a single, rather simple shader with little data, and the 3050 might perform better in a more realistic configuration.
 
