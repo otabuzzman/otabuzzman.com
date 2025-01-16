@@ -9,7 +9,7 @@ theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
 publishDir = "/opt/otabuzzman/www"
 
 [markup.goldmark.parser.attribute]
-# enable mardown attributes
+# enable markdown attributes
 block = true
 
 # use content from repository
@@ -26,6 +26,10 @@ block = true
   [[module.imports.mounts]]
     source = 'layouts'
     target = 'layouts'
+
+# custom CSS files loaded by Ananke
+[params]
+custom_css = ["custom.css"]
 
 # follow and share on social media
 [params.ananke.social.follow]
