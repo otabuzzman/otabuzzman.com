@@ -26,6 +26,9 @@ block = true
   [[module.imports.mounts]]
     source = 'layouts'
     target = 'layouts'
+  [[module.imports.mounts]]
+    source = 'assets'
+    target = 'assets'
 
 # custom CSS files loaded by Ananke
 [params]
