@@ -15,8 +15,8 @@ I once ported the C version to Swift and used [Grand Central Dispatch](https://d
 |:---:|:---:|
 |2.230 s|12.256 s|
 { class="center w-75 f5" }
-Measures on MacBook Pro M2
-{ class="w-75 f6" }
+Both measurements on MacBook Pro M2
+{ class="center w-75 f5" }
 
 The times are the average time of the 10 loops that `test_gpt2` executes and logs to stdout for each loop. The reason for the difference in execution times might be my code, which follows llm.c almost one-to-one except for file I/O and GCD. Model data access uses pointer arithmetic just like llm.c. Anyway, I've postponed looking for the root cause and moved on to trying Metal for parallelization to see how far I can get with it.
 
