@@ -4,7 +4,7 @@ title: "Metal parallelization of llm.c"
 description: "An outline about a Metal implementation for llm.c"
 featured_image: "featured-image.jpg"
 tags: ["parallelcomputing", "Swift", "LLM", "Metal", "Apple", "macOS", "iOS"]
-draft: true
+draft: false
 ---
 
 [Metal](https://developer.apple.com/metal/) is Apple's low-level API for GPU programming and [llm.c](https://github.com/karpathy/llm.c) is Andrej Karpathy's plain C and CUDA implementation of GPT-2. The C version leverages [OpenMP](https://www.openmp.org/) to parallelize the layer functions on the CPU cores. The CUDA version is highly optimized for multi-node multi-accelerator parallelization on NVIDIA GPUs using [Open MPI](https://www.open-mpi.org/) and [NCCL](https://developer.nvidia.com/nccl).
