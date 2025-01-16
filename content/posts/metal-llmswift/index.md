@@ -11,12 +11,12 @@ draft: false
 
 I once ported the C version to Swift and used [Grand Central Dispatch](https://developer.apple.com/documentation/DISPATCH) (GCD) for CPU parallelization. The Xcode project is in [llm.swift](https://github.com/otabuzzman/llm.swift). Despite using the `-Ounchecked` Swift compiler option to generate fast code without bounds checks the C version compiled with `clang` runs about 6 times faster than Swift.
 
-**Measures on MacBook Pro M2**
-
 |llm.c|llm.swift|
 |:---:|:---:|
 |2.230 s|12.256 s|
 { class="center w-75 f5" }
+Measures on MacBook Pro M2
+{ class="w-75 f6" }
 
 The times are the average time of the 10 loops that `test_gpt2` executes and logs to stdout for each loop. The reason for the difference in execution times might be my code, which follows llm.c almost one-to-one except for file I/O and GCD. Model data access uses pointer arithmetic just like llm.c. Anyway, I've postponed looking for the root cause and moved on to trying Metal for parallelization to see how far I can get with it.
 
