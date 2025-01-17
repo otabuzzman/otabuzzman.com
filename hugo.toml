@@ -67,6 +67,7 @@ link = "https://twitter.com/intent/tweet/"
 [params.ananke.social.networks.particles]
 url = "permalink"
 
+# https://stackoverflow.com/a/61583095
 [[params.ananke.social.networks]]
 slug  = "linkedin"
 label = "LinkedIn"
