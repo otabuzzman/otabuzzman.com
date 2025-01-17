@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            config.toml
+            hugo.toml
 
       - name: configure SSH
         run: |
