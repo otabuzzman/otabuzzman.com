@@ -42,4 +42,5 @@ jobs:
 
       - name: eventually build site
         run: |
+          cat hugo.toml | ssh $site_host "cat - >lab/'$site_fqdn'/hugo.toml"
           ssh $site_host 'bash -lc "cd lab/'$site_fqdn' ; hugo mod get -u ; hugo --noTimes"'
