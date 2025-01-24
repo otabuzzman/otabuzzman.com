@@ -1,0 +1,63 @@
+baseURL = 'https://example.group/'
+languageCode = 'en-us'
+title = "Example site"
+
+# use the beautiful Ananke theme
+theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
+
+[markup.goldmark.parser.attribute]
+# enable markdown attributes
+block = true
+
+# custom CSS files loaded by Ananke
+[params]
+custom_css = ["custom.css"]
+
+# follow and share on social media
+[params.ananke.social.follow]
+  new_window_icon = true
+  networks = ["github", "x-twitter", "linkedin"]
+[params.ananke.social.share]
+  sharetext = true
+  networks = ["x-twitter", "linkedin"]
+
+[params.ananke.social.github]
+  username = "otabuzzman"
+[params.ananke.social.x-twitter]
+  username = "otabuzzman"
+[params.ananke.social.linkedin]
+  username = "juergenschuck"
+
+# Ananke requires configurations for all (!) social networks set up,
+# even if changes do not affect all of them.
+
+# update:
+#   1. copy defaults from Ananke repo
+#   2. edit as appropriate
+
+[[params.ananke.social.networks]]
+slug  = "github"
+label = "GitHub"
+color = "#6cc644"
+profile = "https://github.com/%s/"
+icon = "github" # font awesome brand icon name
+
+[[params.ananke.social.networks]]
+slug  = "x-twitter"
+label = "X"
+color = "#000000"
+profile = "https://x.com/%s"
+icon = "x-twitter" # font awesome brand icon name
+link = "https://twitter.com/intent/tweet/"
+[params.ananke.social.networks.particles]
+url = "permalink"
+
+[[params.ananke.social.networks]]
+slug  = "linkedin"
+label = "LinkedIn"
+color = "#0077b5"
+profile = "http://linkedin.com/in/%s"
+icon = "linkedin" # font awesome brand icon name
+link = "https://www.linkedin.com/shareArticle"
+[params.ananke.social.networks.particles]
+url = "permalink"

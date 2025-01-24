@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Metal parallelization of llm.c | Example site</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="An outline about a Metal implementation for llm.c">
+    <meta name="generator" content="Hugo 0.134.3">
+    
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+  
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/metal-llmswift/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/metal-llmswift/">
+  <meta property="og:site_name" content="Example site">
+  <meta property="og:title" content="Metal parallelization of llm.c">
+  <meta property="og:description" content="An outline about a Metal implementation for llm.c">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-12T19:44:21+01:00">
+    <meta property="article:modified_time" content="2025-01-12T19:44:21+01:00">
+    <meta property="article:tag" content="Parallelcomputing">
+    <meta property="article:tag" content="Swift">
+    <meta property="article:tag" content="LLM">
+    <meta property="article:tag" content="Llm.c">
+    <meta property="article:tag" content="CUDA">
+    <meta property="article:tag" content="Metal">
+
+  <meta itemprop="name" content="Metal parallelization of llm.c">
+  <meta itemprop="description" content="An outline about a Metal implementation for llm.c">
+  <meta itemprop="datePublished" content="2025-01-12T19:44:21+01:00">
+  <meta itemprop="dateModified" content="2025-01-12T19:44:21+01:00">
+  <meta itemprop="wordCount" content="1368">
+  <meta itemprop="keywords" content="Parallelcomputing,Swift,LLM,Llm.c,CUDA,Metal,Apple,MacOS,IOS">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Metal parallelization of llm.c">
+  <meta name="twitter:description" content="An outline about a Metal implementation for llm.c">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  
+  
+  
+  <header class="cover bg-center" style="background-image: url('http://localhost:1313/featured-image.jpg');">
+    <div class="bg-black-60">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Example site
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+          <div class="f2 f1-l fw2 white-90 mb0 lh-title">Metal parallelization of llm.c</div>
+          
+            <div class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+              An outline about a Metal implementation for llm.c
+            </div>
+          
+        
+      </div>
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"><a href="https://twitter.com/intent/tweet/?&amp;url=http%3A%2F%2Flocalhost%3A1313%2Fposts%2Fmetal-llmswift%2F"
+        class="ananke-social-link x-twitter no-underline"
+        title="Share on X" aria-label="Share on X"
+        target="_blank" rel="nofollow noopener noreferrer">
+        <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+                
+              </span></a><a href="https://www.linkedin.com/shareArticle?&amp;url=http%3A%2F%2Flocalhost%3A1313%2Fposts%2Fmetal-llmswift%2F"
+        class="ananke-social-link linkedin no-underline"
+        title="Share on LinkedIn" aria-label="Share on LinkedIn"
+        target="_blank" rel="nofollow noopener noreferrer">
+        <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+                
+              </span></a></div>
+<h1 class="f1 athelas mt3 mb1">Metal parallelization of llm.c</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-12T19:44:21+01:00">January 12, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p><a href="https://developer.apple.com/metal/">Metal</a> is Apple&rsquo;s low-level API for GPU programming and <a href="https://github.com/karpathy/llm.c">llm.c</a> is Andrej Karpathy&rsquo;s plain C and CUDA implementation of GPT-2. The C version leverages <a href="https://www.openmp.org/">OpenMP</a> to parallelize the layer functions on the CPU cores. The CUDA version is highly optimized for multi-node multi-accelerator parallelization on NVIDIA GPUs using <a href="https://www.open-mpi.org/">Open MPI</a> and <a href="https://developer.nvidia.com/nccl">NCCL</a>.</p>
+<p>I once ported the C version to Swift and used <a href="https://developer.apple.com/documentation/DISPATCH">Grand Central Dispatch</a> (GCD) for CPU parallelization. The Xcode project is in <a href="https://github.com/otabuzzman/llm.swift">llm.swift</a>. Despite using the <code>-Ounchecked</code> Swift compiler option to generate fast code without bounds checks the C version compiled with <code>clang</code> runs about 6 times faster than Swift.</p>
+<table class="center w-75 f5">
+  <thead>
+      <tr>
+          <th style="text-align: center">llm.c</th>
+          <th style="text-align: center">llm.swift</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">2.230 s</td>
+          <td style="text-align: center">12.256 s</td>
+      </tr>
+  </tbody>
+</table>
+<p class="center w-75 f6">Both measurements on MacBook Pro M2</p>
+<p>The times are the average time of the 10 loops that <code>test_gpt2</code> executes and logs to stdout for each loop. The reason for the difference in execution times might be my code, which follows llm.c almost one-to-one except for file I/O and GCD. Model data access uses pointer arithmetic just like llm.c. Anyway, I&rsquo;ve postponed looking for the root cause and moved on to trying Metal for parallelization to see how far I can get with it.</p>
+<p>I defined a <code>struct Launchpad</code> in <code>LaunchPad.swift</code>. The type contains the necessary data structures for Metal to execute code on GPU. I adapted this concept from <a href="https://github.com/regrettable-username">@regrettable-username</a> from his Metal port of llm.c. He used C and thankfully shared it in <a href="https://github.com/regrettable-username/llm.metal">llm.metal</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">LaunchPad</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">let</span> device: MTLDevice
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">let</span> queue: MTLCommandQueue
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">let</span> library: MTLLibrary
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">var</span> kernel = [String: MTLComputePipelineState]()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">var</span> buffer = [MTLBuffer?]()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// transient objects</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">var</span> command: MTLCommandBuffer?
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">var</span> encoder: MTLComputeCommandEncoder?
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>A global <code>var launchPad</code> in <code>train_gpt2.swift</code> stores an instance of <code>LaunchPad</code>. While not best practice for Swift, I stick with global objects because they&rsquo;re instantly available anywhere I need them without having to pass them around, and it&rsquo;s a lab, and llm.c does it too.</p>
+<p><code>LaunchPad</code> also provides methods for (de-)registering Metal buffers (<code>class MTLBuffer</code>) and functions (<code>class MTLFunction</code>) for shaders, the Metal analogue of CUDA kernels. Both refer to programs that are to be executed on GPUs.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">registerKernel</span>(name: String, <span style="color:#66d9ef">_</span> preserve: Bool = <span style="color:#66d9ef">true</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">registerBuffer</span>(address: UnsafeMutableRawPointer, length: Int, <span style="color:#66d9ef">_</span> preserve: Bool = <span style="color:#66d9ef">true</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">unregisterBuffer</span>(address: UnsafeMutableRawPointer)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">dispatchKernel</span>(name: String, context: KernelContext, params: [KernelParam])
+</span></span></code></pre></div><p>The Metal buffers use memory already allocated by llm.swift during initialization. I inserted the Metal buffer registrations immediately after the allocations of the respective Swift buffers, namely <code>params_memory</code>, <code>acts_memory</code> (both in <code>train_gpt2.swift</code>), and <code>inputs_memory</code> and <code>targets_memory</code> in <code>llmc/dataloader.swift</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#75715e">/// Metal buffer registration for already allocated `params_memory´</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// malloc all parameters all at once</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> params_memory = UnsafeMutableBufferPointer&lt;Float&gt;.allocate(capacity: num_parameters)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> params_length = num_parameters <span style="color:#f92672">*</span> MemoryLayout&lt;Float&gt;.size
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span>? launchPad?.registerBuffer(address: params_memory.baseAddress!, length: params_length)
+</span></span></code></pre></div><p>On init, <code>LaunchPad</code> loads shader code from another global <code>var defaultLibrary</code> defined in <code>dev/metal/DefaultLibrary.swift</code>. It stores the source code of the shaders in a single string in <a href="https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf">Metal Shader Language</a> (MSL). The C++-based MSL defines shaders as functions. The naming concept follows llm.c. It appends <code>&quot;_kernel&quot;</code> and a version to the specific part of a shader name (e.g. <code>encoder_forward_kernel1</code>).</p>
+<p>I decided against using <code>.metal</code> files to enable development on iPad with <em>Swift Playgrounds 4</em>, which does not support compiling <code>.metal</code> files. A future project might be to see if there is a hack for Playgrounds to load shader libraries precompiled with Xcode.</p>
+<p>The architecture of llm.c implements the GPT model as a stack of sequentially called global layer functions, and so does llm.swift. There is one stack for the forward pass in <code>func gpt2_forward</code> and another for the backward (training) pass in <code>func gpt2_backward</code>, both in <code>train_gpt2.swift</code>. The names of the layer functions are concatenations of layer name and pass, e.g. encoder_forward for the encoder layer of the forward pass. The function definitions in <code>train_gpt2.swift</code> execute on CPU. Functions to be executed on GPU are each in its own layer-pass file (e.g. <code>dev/metal/encoder_forward.swift</code>) and have a version number appended to their names. The remaining signature corresponds to that of the CPU functions. The simple naming concept allows quick switching from CPU to GPU by simply adding or removing version numbers.</p>
+<p>Each GPU layer function compiles parameter lists to dispatch shaders via the <code>dispatchKernel</code> method of <code>LaunchPad</code>. Some GPU layer functions just call a single shader (e.g. <code>func encoder_forward1</code>). Functions with more complex logic may call multiple shaders one after the other, since mapping the whole logic onto a single one would not provide significant performance gains. This is the case, for example, when the logic requires if/else branches, which are known to be GPU performance killers.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#75715e">// shader call in `func encoder_forward1´</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">encoder_forward1</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> out: UnsafeMutablePointer&lt;Float&gt;,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> inp: UnsafePointer&lt;Int32&gt;,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> wte: UnsafePointer&lt;Float&gt;,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> wpe: UnsafePointer&lt;Float&gt;,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> B: Int, <span style="color:#66d9ef">_</span> T: Int, <span style="color:#66d9ef">_</span> C: Int,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">_</span> block_size: Int = <span style="color:#ae81ff">256</span>) <span style="color:#66d9ef">throws</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> threadsPerGrid = B <span style="color:#f92672">*</span> T
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> context = KernelContext(
+</span></span><span style="display:flex;"><span>        threadsPerGrid: MTLSize(width: threadsPerGrid, height: <span style="color:#ae81ff">1</span>, depth: <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> params: [KernelParam] = [
+</span></span><span style="display:flex;"><span>        UnsafeMutableRawPointer(out),
+</span></span><span style="display:flex;"><span>        UnsafeMutableRawPointer(<span style="color:#66d9ef">mutating</span>: inp),
+</span></span><span style="display:flex;"><span>        UnsafeMutableRawPointer(<span style="color:#66d9ef">mutating</span>: wte),
+</span></span><span style="display:flex;"><span>        UnsafeMutableRawPointer(<span style="color:#66d9ef">mutating</span>: wpe),
+</span></span><span style="display:flex;"><span>        Int32(B), Int32(T), Int32(C)]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> launchPad?.dispatchKernel(
+</span></span><span style="display:flex;"><span>        name: <span style="color:#e6db74">&#34;encoder_forward_kernel1&#34;</span>,
+</span></span><span style="display:flex;"><span>        context: context,
+</span></span><span style="display:flex;"><span>        params: params)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Metal needs to know the names of the shaders it should execute on the GPU. I inserted the necessary registrations in <code>func test_gpt2</code> (<code>test_gpt2.swift</code>)and <code>func train_gpt2</code> before these functions call <code>func gpt2_forward</code> and <code>func gpt2_backward</code> (the latter in <code>train_gpt2.swift</code>).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#75715e">/// shader registration in `func test_gpt2´</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> kernels = [
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;encoder_forward_kernel1&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;encoder_forward_kernel2&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;encoder_forward_kernel3&#34;</span>
+</span></span><span style="display:flex;"><span>]
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> kernel <span style="color:#66d9ef">in</span> kernels {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">do</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// register layer kernels (shader) for Metal if available</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> launchPad?.registerKernel(name: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\(</span>kernel<span style="color:#e6db74">)</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> { stdlog?(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\(</span>error.localizedDescription<span style="color:#e6db74">)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>) }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>llm.swift compiles each layer-pass file into a command line executable with the same name. These benchmark programs in folder <code>dev/metal</code> expect a version number, call the respective layer function with random data a few times and print the average execution times to stdout. This allows a quick comparison of different shader implementations. Compilation hints are in comments at the beginnings of the layer-pass files.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># output (truncated) of `encoder_forward´ benchmark program</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#   ./dev/metal/encoder_forward 2</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># block sizes are from llm.c/ CUDA and have no use in Metal</span>
+</span></span><span style="display:flex;"><span>... <span style="color:#f92672">(</span>lines removed<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>CPU time 2.7149 ms
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>block_size <span style="color:#ae81ff">64</span>   | time 0.0014 ms | bandwidth 71.00 GB/s
+</span></span><span style="display:flex;"><span>block_size <span style="color:#ae81ff">128</span>  | time 0.0014 ms | bandwidth 74.50 GB/s
+</span></span><span style="display:flex;"><span>block_size <span style="color:#ae81ff">256</span>  | time 0.0013 ms | bandwidth 75.27 GB/s
+</span></span><span style="display:flex;"><span>block_size <span style="color:#ae81ff">512</span>  | time 0.0013 ms | bandwidth 75.86 GB/s
+</span></span><span style="display:flex;"><span>block_size <span style="color:#ae81ff">1024</span> | time 0.0013 ms | bandwidth 75.44 GB/s
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># the &#34;napkin math&#34; for bandwitch in llm.c/ CUDA</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># is probably not suitable for llm.swift/ Metal</span>
+</span></span></code></pre></div><p>The shaders in <code>var defaultLibrary</code> are mostly one-to-one ports of the CUDA kernels in llm.c. Deviations occur when CUDA features are available differently or not at all in MSP and therefore require specific implementations.</p>
+<p>When the GPU layer functions return dispatched shaders must be committed to start execution. A subsequent call of the <code>commit</code> method of <code>LaunchPad</code> adds the shaders to the Metal compute pipeline, where the GPU fetches and executes them one by one. <code>commit</code> returns immediately to continue processing the layer stack on the CPU and thus continue calling GPU layer functions that feed shaders into the pipeline and keep the GPU busy. CPU and GPU run asynchronously. The commit after the last GPU layer function therefore waits until all shaders have been executed.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#75715e">// the CPU layer function...</span>
+</span></span><span style="display:flex;"><span>encoder_forward(acts.encoded, inputs, params.wte, params.wpe, B, T, C)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// ...and the GPU replacement</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span> encoder_forward3(acts.encoded, inputs, params.wte, params.wpe, B, T, C)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span> launchPad?.commit(wait: <span style="color:#66d9ef">true</span>) <span style="color:#75715e">// wait until GPU finishes</span>
+</span></span></code></pre></div><p><strong>GPU layer function benchmarks</strong></p>
+<table class="f5">
+  <thead>
+      <tr>
+          <th style="text-align: center">Program</th>
+          <th style="text-align: center">Version</th>
+          <th style="text-align: center">llm.swift</th>
+          <th style="text-align: center">llm.c</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">encoder_forward</td>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">2.0 ms</td>
+          <td style="text-align: center">0.0014 ms</td>
+      </tr>
+  </tbody>
+</table>
+<p class="f6">llm.swift: Metal version on MacBook Pro M2<br />
+
+llm.c: CUDA version on Lenovo IdeaPad with NVIDIA RTX 3050 Ti</p>
+<p>Obviously there are differences between the two systems that make the M2 (2023) chip look better than the RTX 3050 Ti (2021). One difference is the unified memory feature, which allows the M2 to share Metal buffers between CPU and GPU, while the 3050 has to copy the buffers. On the other hand, <code>encoder_forward</code> calls a single, rather simple shader with little data, and the 3050 might perform better in a more realistic configuration.</p>
+<p>Currently I only have a GPU layer function for the encoder layer of the forward pass. Let&rsquo;s see how llm.swift behaves with more functions to come until both layer stacks run entirely on the GPU.</p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/parallelcomputing/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Parallelcomputing</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/swift/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Swift</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/llm/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">LLM</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/llm.c/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Llm.c</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/cuda/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">CUDA</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/metal/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Metal</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/apple/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Apple</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/macos/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">MacOS</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/ios/" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">IOS</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  Example site 2025 
+  </a>
+    <div><div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span></a></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>
