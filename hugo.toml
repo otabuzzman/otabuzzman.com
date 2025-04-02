@@ -50,15 +50,13 @@ custom_css = ["custom.css"]
   username = "juergenschuck"
 
 # configurations for all (!) set up social media required
-[[params.ananke.social.networks]]
-slug  = "github"
+[[params.ananke.social.networks.github]]
 label = "GitHub"
 color = "#6cc644"
 profile = "https://github.com/%s/"
 icon = "github" # font awesome brand icon name
 
-[[params.ananke.social.networks]]
-slug  = "x-twitter"
+[[params.ananke.social.networks.x-twitter]]
 label = "X"
 color = "#000000"
 profile = "https://x.com/%s"
@@ -68,8 +66,7 @@ link = "https://twitter.com/intent/tweet/"
 url = "permalink"
 
 # https://stackoverflow.com/a/61583095
-[[params.ananke.social.networks]]
-slug  = "linkedin"
+[[params.ananke.social.networks.linkedin]]
 label = "LinkedIn"
 color = "#0077b5"
 profile = "http://linkedin.com/in/%s"
