@@ -62,7 +62,7 @@ color = "#000000"
 profile = "https://x.com/%s"
 icon = "x-twitter" # font awesome brand icon name
 link = "https://twitter.com/intent/tweet/"
-[params.ananke.social.networks.particles]
+[params.ananke.social.networks.x-twitter.particles]
 url = "permalink"
 
 # https://stackoverflow.com/a/61583095
@@ -72,5 +72,5 @@ color = "#0077b5"
 profile = "http://linkedin.com/in/%s"
 icon = "linkedin" # font awesome brand icon name
 link = "https://www.linkedin.com/shareArticle"
-[params.ananke.social.networks.particles]
+[params.ananke.social.networks.linkedin.particles]
 url = "permalink"
