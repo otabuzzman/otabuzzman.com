@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Java on otabuzzman&#39;s blog</title>
+    <link>http://localhost:1313/tags/java/</link>
+    <description>Recent content in Java on otabuzzman&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 28 Oct 2024 16:58:13 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/java/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Run llm.c in TornadoVM</title>
+      <link>http://localhost:1313/posts/tornado-llmc/</link>
+      <pubDate>Mon, 28 Oct 2024 16:58:13 +0200</pubDate>
+      <guid>http://localhost:1313/posts/tornado-llmc/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/beehive-lab/TornadoVM&#34;&gt;TornadoVM&lt;/a&gt; lets Java programs execute on accelerators. &lt;a href=&#34;https://github.com/karpathy/llm.c&#34;&gt;llm.c&lt;/a&gt; is a plain C implementation of OpenAI‘s GPT-2, the LLM that powered the 1st ChatGPT. Released in fall ‘22, it sparked an AI hype that still lasts. Both are not a perfect fit at first glance, but a Java version of llm.c could make them friends, so I tried to bring them together.&lt;/p&gt;&#xA;&lt;p&gt;Although there was already a Java port of llm.c, I made my own to get (back) into the groove of Java. I defined some obvious classes, turned C functions into Java methods, replaced pointers with array inidices, used Java Streams instead of OpenMP to parallelize &lt;code&gt;for&lt;/code&gt;-loops, and leveraged the Java Vector API for matrix multiplication (the latter taken from &lt;a href=&#34;https://github.com/mukel/llama2.java&#34;&gt;llama2.java&lt;/a&gt;, thx for sharing &lt;a href=&#34;https://github.com/mukel&#34;&gt;@TheMukel&lt;/a&gt;).&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

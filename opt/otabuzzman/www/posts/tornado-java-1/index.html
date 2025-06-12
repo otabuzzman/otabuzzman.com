@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Parallel Java with TornadoVM | otabuzzman&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Refactoring for parallelization with TornadoVM">
+    <meta name="generator" content="Hugo 0.134.3">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+  
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/tornado-java-1/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/tornado-java-1/">
+  <meta property="og:site_name" content="otabuzzman&#39;s blog">
+  <meta property="og:title" content="Parallel Java with TornadoVM">
+  <meta property="og:description" content="Refactoring for parallelization with TornadoVM">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:tag" content="CUDA">
+    <meta property="article:tag" content="Parallelcomputing">
+    <meta property="article:tag" content="GPGPU">
+    <meta property="article:tag" content="TornadoVM">
+    <meta property="article:tag" content="AMD">
+    <meta property="article:tag" content="Intel">
+    <meta property="og:image" content="http://localhost:1313/posts/tornado-java-1/featured_image.jpg">
+
+  <meta itemprop="name" content="Parallel Java with TornadoVM">
+  <meta itemprop="description" content="Refactoring for parallelization with TornadoVM">
+  <meta itemprop="wordCount" content="2484">
+  <meta itemprop="image" content="http://localhost:1313/posts/tornado-java-1/featured_image.jpg">
+  <meta itemprop="keywords" content="CUDA,Parallelcomputing,GPGPU,TornadoVM,AMD,Intel,NVIDIA">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/posts/tornado-java-1/featured_image.jpg">
+  <meta name="twitter:title" content="Parallel Java with TornadoVM">
+  <meta name="twitter:description" content="Refactoring for parallelization with TornadoVM">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  
+  
+  
+  <header class="cover bg-center" style="background-image: url('/posts/tornado-java-1/featured_image.jpg');">
+    <div class="bg-black-60">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        otabuzzman&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+          <div class="f2 f1-l fw2 white-90 mb0 lh-title">Parallel Java with TornadoVM</div>
+          
+            <div class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+              Refactoring for parallelization with TornadoVM
+            </div>
+          
+        
+      </div>
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  
+  <article class="flex-l mw8 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+         
+      </aside>
+<h1 class="f1 athelas mt3 mb1">Parallel Java with TornadoVM</h1>
+      
+      
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>A few years ago I wrote a Java app that creates star maps (<a href="https://chartacaeli.org/artistic-star-chart.pdf">example</a>). It does this by projecting the coordinates of celestial bodies onto a flat canvas. One of the features is to map images of artistic representations of certain star constellations onto the maps. The approach I took to perform the required calculations turned out to be quite slow.</p>
+<p>When I heard about <a href="https://developer.nvidia.com/cuda-toolkit">CUDA</a> I was excited by the idea of doing computations on graphics cards. I wondered if my slow sequential Java code could be run much faster in parallel on a GPU.</p>
+<p>While searching for a CUDA JNI I came across <a href="https://www.cs.rit.edu/~ark/">Alan Kamnisky&rsquo;s</a> <a href="https://www.cs.rit.edu/~ark/pj2.shtml">Parallel Java 2 library</a> (PJ2). Alan is a (now retired) professor at the Rochester Institute of Technology. For his lectures he wrote PJ2 and the accompanying book <a href="https://www.cs.rit.edu/~ark/bcbd_2/">Big CPU, Big Data</a>. There were other CUDA JNI implementations at the time (e.g. jCUDA), but I stuck with PJ2 because it also provides APIs for Java parallelization on multiple CPU cores, as well as abstractions for executing code on multiple nodes.</p>
+<p>PJ2 made things a lot easier, but there was still a need to write and compile a CUDA kernel. This in turn required learning how to use the necessary tools and APIs in NVIDIA&rsquo;s CUDA Toolkit. I ended up with a somewhat confusing codebase and build system which both are more difficult to maintain than in pure Java. Last but not least, the implementation is tied to NVIDIA. For other, also common accelerators, the learning curve must be gone through again.</p>
+<h2 id="tornadovm">TornadoVM</h2>
+<p><a href="https://www.tornadovm.org">TornadoVM</a> provides a simple API for scheduling Java code to run on popular accelerators (AMD, Intel, NVIDIA) without requiring programmers to leave the Java ecosystem. TornadoVM does all the heavy lifting of preparing and executing Java code on accelerators, including transferring data between host and device.</p>
+<p>One question in a parallelization project is <em>what</em> should be parallelized. The answer is most likely <em>loops</em> if it&rsquo;s a single program that&rsquo;s meant to run on a single computer. In general, loops whose iterations work with data that is independent of the data of the other iterations are candidates for parallelization.</p>
+<p>However, this comes at a price, because data and code must be transferred to another execution unit (GPU) and the result transferred back from there. The time saved through parallelization must therefore at least compensate for the time required to prepare the GPU, which means that a correspondingly large number of iterations is usually required. Too few iterations may even result in worse execution times overall. However, in that case the candidate may still be suitable for parallel execution on multiple CPU cores instead of a GPU.</p>
+<p>Sometimes it is a question of trial and error whether the effort for parallelization is worth it, and the effort should therefore be as low as possible. PJ2 is a great help as it enables parallel execution on multi-core CPUs and NVIDIA GPUs, but the latter of which still requires additional development effort in a different ecosystem. TornadoVM enables GPU programming in Java, not only for NVIDIA, but also for AMD and Intel.</p>
+<h2 id="porting-to-tornadovm">Porting to TornadoVM</h2>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center"></th>
+          <th style="text-align: left"></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center"><figure class="f6 measure-narrow"><img src="/posts/tornado-java-1/andromeda-texture.png"
+    alt="Texture image"><figcaption>
+      <p>Texture image</p>
+    </figcaption>
+</figure>
+</td>
+          <td style="text-align: center"><figure class="f6 measure-narrow"><img src="/posts/tornado-java-1/andromeda-in-bbox.png"
+    alt="Mapping in bounding box"><figcaption>
+      <p>Mapping in bounding box</p>
+    </figcaption>
+</figure>
+</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><figure class="f6 measure-narrow"><img src="/posts/tornado-java-1/andromeda-mapping.png"
+    alt="Bounding box set to background"><figcaption>
+      <p>Bounding box set to background</p>
+    </figcaption>
+</figure>
+</td>
+          <td style="text-align: center"><figure class="f6 measure-narrow"><img src="/posts/tornado-java-1/andromeda-starmap.png"
+    alt="Mapping shown in star map"><figcaption>
+      <p>Mapping shown in star map</p>
+    </figcaption>
+</figure>
+</td>
+      </tr>
+  </tbody>
+</table>
+<p>The approach I took for my app was a) project the edges of a source image (texture) onto a flat canvas (the projection plane), b) find the rectangular bounding box of the distorted result image (mapping), c) project each pixel of the mapping backwards onto the texture, and d) set the mapping pixel to the color of the pixel found in the texture.</p>
+<p>Due to distortions caused by projection properties (e.g. stereographic), not every mapping pixel might have a corresponding texture pixel. These pixels are defined as background and colored accordingly.</p>
+<p>Source and result images are termed <em>texture</em> and <em>mapping</em> respectively.</p>
+<p>Put to Java there is a <code>class Artwork</code> to process each indiviual texture. <code>Artwork</code> defines several methods for setting things up and uses subclasses to execute my approach on different units (GPUs) by calling the <code>main</code> methods of these subclasses.</p>
+<ul>
+<li><code>PJ2TextureMapperSeq</code> executes sequential on a single CPU core.</li>
+<li><code>PJ2TextureMapperSmp</code> executes parallel on available CPU cores.</li>
+<li><code>PJ2TextureMapperGpu</code> executes parallel on a single GPU.</li>
+</ul>
+<p>A configuration switch defines which subclass <code>Artwork</code> uses to do the mapping.</p>
+<p>I kept the overall architecture and just copied the sequential subclass <code>PJ2TextureMapperSeq</code> to <code>TVMTextureMapperGpu</code> which would become the TornadoVM implementation. Then I adapted the new subclass step by step to the needs of TornadoVM.</p>
+<p>All subclasses extend the abstract class <code>Task</code> from PJ2 which requires a single method <code>main</code> that contains the code supposed for parallel execution. Thus, <em>adapting TVMTextureMapperGpu</em> essentially meant to change the copied code in <code>TVMTextureMapperGpu::main</code> for parallel execution by TornadoVM.</p>
+<p>A program supposed to execute on a GPU is termed a <em>kernel</em>. In TornadoVM, a kernel is a static Java method that TornadoVM prepares and schedules for execution on GPU and whose results it eventually retrieves. This means I had to write a method for the kernel and another to set up TornadoVM to run the kernel on the GPU.</p>
+<p>In my original implementation, the <code>main</code> methods contain the code intended for parallelization and could therefore be considered kernels. So, in <code>TVMTextureMapperGpu</code> I moved the code from <code>main</code> into a new static method called <code>k3rnel</code> and put the necessary code for preparing and eventually executing <code>k3rnel</code> into <code>main</code>.</p>
+<p>Texture mapping by the subclasses of <code>Artwork</code> goes pixel-wise in a nested <code>for</code>-loop with control variables for x and y pixels. The <a href="https://tornadovm.readthedocs.io/en/latest/programming.html#loop-parallel-api">Loop Parallel API</a> of TornadoVM parallelizes <code>for</code>-loops by simply adding <code>@Parallel</code> annotations.</p>
+<p>For this to work, the kernel code in the body of the <code>for</code>-loop must use Java primitive types. TornadoVM does not support custom objects or objects from third-party libraries, e.g. Apache Commons Math. The only allowed object types are <a href="https://github.com/otabuzzman/TornadoVM/tree/master/tornado-api/src/main/java/uk/ac/manchester/tornado/api/types">those provided by TornadoVM</a>, mainly matrices, vectors and arrays thereof.</p>
+<p>That said, I had to refactor my kernel to use only primitive types and objects instantiated from classes in the TornadoVM API. I turned custom classes as well as classes from third-parties into static methods called by the kernel, and if necessary, provided instance variables as method parameters. This effectively meant copying code from instance methods, which could be a problem with third-party closed-source libraries. Mine are all open source and converting code from instance methods to static ones was mostly a matter of copy and paste.</p>
+<p>It turned out that some things were not working with the Loop Parallel API:</p>
+<ul>
+<li>
+<p>Defining objects outside the body of the <code>for</code>-loop and changing their instance variables inside yields runtime errors.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// code fragment to illustrate constraint</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">k3rnel</span>() {
+</span></span><span style="display:flex;"><span>  Float3 st <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Float3( 0, 0, 0 ) ;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span>0 ; i<span style="color:#f92672">&lt;</span>4 ; i<span style="color:#f92672">++</span> ) {
+</span></span><span style="display:flex;"><span>    st.<span style="color:#a6e22e">set</span>(0, 1) ; <span style="color:#75715e">// &lt;--- runtime error</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>Solve:</strong> Move definition inside <code>for</code>-loop.</p>
+</li>
+<li>
+<p>Using <code>return</code> inside  the <code>for</code>-loop body yields runtime errors.
+<strong>Solve:</strong> Refactor code to use <code>continue</code>.</p>
+</li>
+<li>
+<p>Using cast operators in an expression inside a subscript operator of TornadoVM API yields runtime error &ldquo;No resources on GPU&rdquo;.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// code fragment to illustrate constraint</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">k3rnel</span>( IntArray texture, IntArray mapping, <span style="color:#66d9ef">int</span> dims, <span style="color:#66d9ef">int</span> dimo ) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> t<span style="color:#f92672">=</span>0 ; t<span style="color:#f92672">&lt;</span>size ; t<span style="color:#f92672">++</span> ) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> s<span style="color:#f92672">=</span>0 ; s<span style="color:#f92672">&lt;</span>size ; s<span style="color:#f92672">++</span> ) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">float</span> o <span style="color:#f92672">=</span> 4711f ;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">float</span> p <span style="color:#f92672">=</span> 42f ;
+</span></span><span style="display:flex;"><span>      mapping<span style="color:#f92672">[</span>t<span style="color:#f92672">*</span>dims<span style="color:#f92672">+</span>s<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> texture<span style="color:#f92672">[</span>(<span style="color:#66d9ef">int</span>) p<span style="color:#f92672">*</span>dimo<span style="color:#f92672">+</span>(<span style="color:#66d9ef">int</span>) o<span style="color:#f92672">]</span> ; <span style="color:#75715e">// &lt;--- runtime error</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>Solve:</strong> Define propper types to avoid casts.</p>
+</li>
+</ul>
+<p>Kernel handling in terms of preparation and execution happens in <code>TVMTextureMapperGpu::main</code> by first setting up a task graph using TornadoVM&rsquo;s <code>TaskGraph</code> class. The API takes a string identifier and defines a set of nodes by calling chained methods to a) transfer memory to the GPU, b) schedule the kernel method for execution, and c) pass the results back to Java.</p>
+<p>The <code>TornadoExecutionPlan</code> class then prepares the task graph for execution, executes it on the GPU and waits for it to complete.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span>( String<span style="color:#f92672">[]</span> argv ) <span style="color:#66d9ef">throws</span> Exception {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// initialize variables</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// define a task graph as sequence of nodes</span>
+</span></span><span style="display:flex;"><span>  TaskGraph taskGraph <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TaskGraph(<span style="color:#e6db74">&#34;s0&#34;</span>)
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy buffer(s) from Java to GPU</span>
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">transferToDevice</span>( DataTransferMode.<span style="color:#a6e22e">FIRST_EXECUTION</span>, buffer, ... )
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// define kernel to execute with parameters</span>
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">task</span>( <span style="color:#e6db74">&#34;t0&#34;</span>, Artwork.<span style="color:#a6e22e">TVMTextureMapperGpu</span>::k3rnel, param, ... )
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy result(s) from GPU to Java</span>
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">transferToHost</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, result, ... ) ;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// prepare task graph for execution on GPU</span>
+</span></span><span style="display:flex;"><span>  ImmutableTaskGraph immutableTaskGraph <span style="color:#f92672">=</span> taskGraph.<span style="color:#a6e22e">snapshot</span>() ;
+</span></span><span style="display:flex;"><span>  ornadoExecutionPlan executionPlan <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TornadoExecutionPlan( immutableTaskGraph ) ;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  executionPlan.<span style="color:#a6e22e">execute</span>() ; <span style="color:#75715e">// run kernel on GPU</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// process result</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The <code>task</code> method of <code>TaskGraph</code> accepts up to 15 parameters that it passes to the kernel method on the GPU. The supported types are Java primitives or the classes provided by the TornadoVM API. The latter contain a number of memory buffers for data exchange between Java and the GPU. Buffers that contain data to be processed by the kernel must be set accordingly before being passed to the task graph. These buffers must be explicitly transferred to the GPU using the <code>transferToDevice</code> method of <code>TaskGraph</code>. Result buffers that are only written by the GPU do not require a transferToDevice node. Every buffer processed by the GPU must appear in the kernel&rsquo;s parameters. The <code>transferToHost</code> method of <code>TaskGraph</code> retrieves result buffers from the GPU back to Java.</p>
+<p>That was essentially all I did to get a TornadoVM version of my former sequential executing texture mapping method. The <a href="https://github.com/otabuzzman/chartacaeli-app/blob/tornado/org/chartacaeli/Artwork.java">full source</a> of <code>Artwork</code> and its contained new subclass <code>TVMTextureMapperGpu</code> are in my <a href="https://github.com/otabuzzman/chartacaeli-app">repository on GitHub</a>. I found using the TornadoVM API rather easy. The key points on <a href="https://tornadovm.readthedocs.io/en/latest/programming.html">programming with TornadoVM</a> fit on a single fairly short webpage. Reading the many examples provided with TornadoVM was also very helpful.</p>
+<h2 id="compile-with-tornadovm">Compile with TornadoVM</h2>
+<p>My app uses Maven to compile and build. I copied <a href="https://tornadovm.readthedocs.io/en/latest/installation.html#tornadovm-maven-projects">snippets</a> provided by TornadoVM into my <a href="https://github.com/otabuzzman/chartacaeli-app/blob/tornado/pom.xml"><code>pom.xml</code></a> file to have Maven fetch the necessary JARs needed to compile and build for TornadoVM.</p>
+<p>Another tool chain in my setup uses <code>make</code> to build with the <code>javac</code> compiler. I extended the <code>-classpath</code> option of <code>javac</code> with the TornadoVM JARs and their dependencies. The exact changes are best looked up in my <a href="https://github.com/otabuzzman/chartacaeli-app/blob/tornado/Makefile"><code>Makefile</code></a> located in the repository. Compiling the list of JARs was tedious and I would recommend using Maven if possible.</p>
+<h2 id="execute-a-tornadovm-app">Execute a TornadoVM app</h2>
+<p>I used TornadoVM 1.0.3 that I built from source. This is well documented on the <a href="https://tornadovm.readthedocs.io/en/latest/installation.html">TornadoVM website</a> and works smoothly on Linux, macOS and Windows. Running apps simply requires replacing the <code>java</code> command with <code>tornado</code>. It sets up an execution environment for TornadoVM and finally executes the <code>java</code> command passing it any options not specific to <code>tornado</code>.</p>
+<p>Because I am on Windows and <code>tornado</code> is a Python script I have to prepend the Python interpreter and call <code>python tornado ...</code>. This is not necessary on Linux and MacOS.</p>
+<p>If I run <code>tornado</code> without any special options, the app will run on the default accelerator. On my notebook, this is an NVIDIA graphics card. But there is also an integrated Intel GPU that is suitable for parallel execution, and last but not least, the 8 cores of my CPU. Since I built TornadoVM for all supported accelerators, my app has access to all the execution units in my notebook, which I simply select with a Java property when calling <code>tornado</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python %TORNADO_SDK%<span style="color:#ae81ff">\b</span>in<span style="color:#ae81ff">\t</span>ornado --devices
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Number of Tornado drivers: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>Driver: SPIRV
+</span></span><span style="display:flex;"><span>  Total number of SPIRV devices  : <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  Tornado device<span style="color:#f92672">=</span>0:0  <span style="color:#f92672">(</span>DEFAULT<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    SPIRV -- SPIRV LevelZero - Intel<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> Iris<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> Xe Graphics
+</span></span><span style="display:flex;"><span>            Global Memory Size: 6,3 GB
+</span></span><span style="display:flex;"><span>            Local Memory Size: 64,0 KB
+</span></span><span style="display:flex;"><span>            Workgroup Dimensions: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>            Total Number of Block Threads: <span style="color:#f92672">[</span>512<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Max WorkGroup Configuration: <span style="color:#f92672">[</span>512, 512, 512<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Device OpenCL C version:  <span style="color:#f92672">(</span>LEVEL ZERO<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Driver: OpenCL
+</span></span><span style="display:flex;"><span>  Total number of OpenCL devices  : <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>  Tornado device<span style="color:#f92672">=</span>1:0
+</span></span><span style="display:flex;"><span>    OPENCL --  <span style="color:#f92672">[</span>NVIDIA CUDA<span style="color:#f92672">]</span> -- NVIDIA GeForce RTX <span style="color:#ae81ff">3050</span> Ti Laptop GPU
+</span></span><span style="display:flex;"><span>            Global Memory Size: 4,0 GB
+</span></span><span style="display:flex;"><span>            Local Memory Size: 48,0 KB
+</span></span><span style="display:flex;"><span>            Workgroup Dimensions: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>            Total Number of Block Threads: <span style="color:#f92672">[</span>1024<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Max WorkGroup Configuration: <span style="color:#f92672">[</span>1024, 1024, 64<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Device OpenCL C version: OpenCL C 1.2
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  Tornado device<span style="color:#f92672">=</span>1:1
+</span></span><span style="display:flex;"><span>    OPENCL --  <span style="color:#f92672">[</span>Intel<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> OpenCL Graphics<span style="color:#f92672">]</span> -- Intel<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> Iris<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> Xe Graphics
+</span></span><span style="display:flex;"><span>            Global Memory Size: 6,3 GB
+</span></span><span style="display:flex;"><span>            Local Memory Size: 64,0 KB
+</span></span><span style="display:flex;"><span>            Workgroup Dimensions: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>            Total Number of Block Threads: <span style="color:#f92672">[</span>512<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Max WorkGroup Configuration: <span style="color:#f92672">[</span>512, 512, 512<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Device OpenCL C version: OpenCL C 1.2
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  Tornado device<span style="color:#f92672">=</span>1:2
+</span></span><span style="display:flex;"><span>    OPENCL --  <span style="color:#f92672">[</span>Intel<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> OpenCL<span style="color:#f92672">]</span> -- 11th Gen Intel<span style="color:#f92672">(</span>R<span style="color:#f92672">)</span> Core<span style="color:#f92672">(</span>TM<span style="color:#f92672">)</span> i5-11320H @ 3.20GHz
+</span></span><span style="display:flex;"><span>            Global Memory Size: 15,8 GB
+</span></span><span style="display:flex;"><span>            Local Memory Size: 32,0 KB
+</span></span><span style="display:flex;"><span>            Workgroup Dimensions: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>            Total Number of Block Threads: <span style="color:#f92672">[</span>8192<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Max WorkGroup Configuration: <span style="color:#f92672">[</span>8192, 8192, 8192<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Device OpenCL C version: OpenCL C 3.0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Driver: PTX
+</span></span><span style="display:flex;"><span>  Total number of PTX devices  : <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  Tornado device<span style="color:#f92672">=</span>2:0
+</span></span><span style="display:flex;"><span>    PTX -- PTX -- NVIDIA GeForce RTX <span style="color:#ae81ff">3050</span> Ti Laptop GPU
+</span></span><span style="display:flex;"><span>            Global Memory Size: 4,0 GB
+</span></span><span style="display:flex;"><span>            Local Memory Size: 48,0 KB
+</span></span><span style="display:flex;"><span>            Workgroup Dimensions: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>            Total Number of Block Threads: <span style="color:#f92672">[</span>2147483647, 65535, 65535<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Max WorkGroup Configuration: <span style="color:#f92672">[</span>1024, 1024, 64<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            Device OpenCL C version: N/A
+</span></span></code></pre></div><p>The <code>tornado --devices</code> command lists the known devices. To select a specific execution unit of my notebook, I set the device ID from the device list as the value of a property (e.g. <code>1:0</code> for the NVIDIA GPU using the OpenCL driver). The name of the property is a dot-concatenation of the string IDs of the task graph (<code>&quot;s0&quot;</code>), the task node (<code>&quot;t0&quot;</code>), and the <code>device</code> literal (e.g. <code>s0.t0.device</code> for the code fragment shown above). Put together for my box the command <code>python tornado --jvm -Ds0.t0.device=1:0 ...</code> will execute my app on the NVIDIA GPU of my notebook. Using device ID <code>0:0</code> will execute on the integrated Intel GPU and <code>1:2</code> will use the CPU cores.</p>
+<p>Using device <code>2:0</code> will fail because my app uses the math function <code>atan2</code> which is not supported by the PTX driver. TornadoVM reports the error and runs the kernel on the CPU instead.</p>
+<h2 id="measured-execution-times">Measured execution times</h2>
+<p>The table lists the milliseconds that the subclasses took to calculate the images of the example star map. For each subclass, there is a column divided into the accelerators of my notebook. The <code>parallelTask</code> column lists the total time it took to execute the <code>main</code> method of a subclass.</p>
+<p><a href="measures.pdf" title="Click to view PDF"><img src="measures.png" alt="Measured execution times"></a></p>
+<p>The <code>gain</code> columns to the right of the accelerator columns relate the times of the respective TornadoVM subclass to those of PJ2. The values scatter between faster and slower than PJ2, but all indicate faster execution than on multiple CPU cores. One possible reason for the scatter is the extra time TornadoVM needs to compile the kernel just-in-time from Java code into an executable for the selected accelerator. Another reason could be that some texture mappings are just not <em>hard enough</em> for parallelization with TornadoVM.</p>
+<p>Running my app on the Intel accelerator that is also built into my notebook shows similar results to the NVIDIA GPU. I found this interesting because I didn&rsquo;t really had that GPU on my radar. I&rsquo;m wondering if I could use it in addition to NVIDIA&rsquo;s <em>main</em> GPU by leveraging TornadoVM&rsquo;s <a href="https://tornadovm.readthedocs.io/en/latest/multi-device.html">multi-device execution</a> feature.</p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/cuda/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">CUDA</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/parallelcomputing/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Parallelcomputing</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/gpgpu/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">GPGPU</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/tornadovm/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">TornadoVM</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/amd/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">AMD</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/intel/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Intel</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/nvidia/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">NVIDIA</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+  <div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+    <p class="f5 b mb3">Related</p>
+    <ul class="pa0 list">
+	   
+	     <li  class="mb2">
+          <a href="/posts/tornado-java-3/">Parallel Java with TornadoVM (3)</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/tornado-java-2/">Parallel Java with TornadoVM (2)</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/parallel-java/">Parallel Java with CUDA</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/metal-llmswift/">Metal parallelization of llm.c</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/tornado-llmc/">Run llm.c in TornadoVM</a>
+        </li>
+	    
+    </ul>
+</div>
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  otabuzzman's blog 2025 
+  </a>
+    <div><div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

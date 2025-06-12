@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Run llm.c in TornadoVM | otabuzzman&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="A lab on executing GPT-2 in a Java app on accelerators">
+    <meta name="generator" content="Hugo 0.134.3">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+  
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/tornado-llmc/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/tornado-llmc/">
+  <meta property="og:site_name" content="otabuzzman&#39;s blog">
+  <meta property="og:title" content="Run llm.c in TornadoVM">
+  <meta property="og:description" content="A lab on executing GPT-2 in a Java app on accelerators">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-28T16:58:13+02:00">
+    <meta property="article:modified_time" content="2024-10-28T16:58:13+02:00">
+    <meta property="article:tag" content="CUDA">
+    <meta property="article:tag" content="Parallelcomputing">
+    <meta property="article:tag" content="Java">
+    <meta property="article:tag" content="LLM">
+    <meta property="og:image" content="http://localhost:1313/posts/tornado-llmc/featured_image.jpg">
+
+  <meta itemprop="name" content="Run llm.c in TornadoVM">
+  <meta itemprop="description" content="A lab on executing GPT-2 in a Java app on accelerators">
+  <meta itemprop="datePublished" content="2024-10-28T16:58:13+02:00">
+  <meta itemprop="dateModified" content="2024-10-28T16:58:13+02:00">
+  <meta itemprop="wordCount" content="2174">
+  <meta itemprop="image" content="http://localhost:1313/posts/tornado-llmc/featured_image.jpg">
+  <meta itemprop="keywords" content="CUDA,Parallelcomputing,Java,LLM">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/posts/tornado-llmc/featured_image.jpg">
+  <meta name="twitter:title" content="Run llm.c in TornadoVM">
+  <meta name="twitter:description" content="A lab on executing GPT-2 in a Java app on accelerators">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  
+  
+  
+  <header class="cover bg-center" style="background-image: url('/posts/tornado-llmc/featured_image.jpg');">
+    <div class="bg-black-60">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        otabuzzman&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+          <div class="f2 f1-l fw2 white-90 mb0 lh-title">Run llm.c in TornadoVM</div>
+          
+            <div class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+              A lab on executing GPT-2 in a Java app on accelerators
+            </div>
+          
+        
+      </div>
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  
+  <article class="flex-l mw8 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+         
+      </aside>
+<h1 class="f1 athelas mt3 mb1">Run llm.c in TornadoVM</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2024-10-28T16:58:13+02:00">October 28, 2024</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p><a href="https://github.com/beehive-lab/TornadoVM">TornadoVM</a> lets Java programs execute on accelerators. <a href="https://github.com/karpathy/llm.c">llm.c</a> is a plain C implementation of OpenAI‘s GPT-2, the LLM that powered the 1st ChatGPT. Released in fall ‘22, it sparked an AI hype that still lasts. Both are not a perfect fit at first glance, but a Java version of llm.c could make them friends, so I tried to bring them together.</p>
+<p>Although there was already a Java port of llm.c, I made my own to get (back) into the groove of Java. I defined some obvious classes, turned C functions into Java methods, replaced pointers with array inidices, used Java Streams instead of OpenMP to parallelize <code>for</code>-loops, and leveraged the Java Vector API for matrix multiplication (the latter taken from <a href="https://github.com/mukel/llama2.java">llama2.java</a>, thx for sharing <a href="https://github.com/mukel">@TheMukel</a>).</p>
+<p>The port is in the <code>main</code> branch of <a href="https://github.com/otabuzzman/llm.java">llm.java</a>. Performance compared to llm.c is almost equal. The measures taken on my <a href="https://psref.lenovo.com/syspool/Sys/PDF/IdeaPad/IdeaPad_Gaming_3_15IHU6/IdeaPad_Gaming_3_15IHU6_Spec.html">Lenovo Ideapad Gaming 3</a> (i5 4-core/ 16 GB, Intel Irix Graphics, NVIDIA RTX 3050 ti 4 GB) are for a single <em>forward</em> pass that applies the entire GPT stack exactly once.</p>
+<!-- raw HTML omitted -->
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Version</th>
+          <th style="text-align: center">Vector API <br />
+ enabled</th>
+          <th style="text-align: center">forward <br />
+ pass (ms)</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">llm.c/ C</td>
+          <td style="text-align: center">n/ a</td>
+          <td style="text-align: center">3712</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">llm.c/ Java</td>
+          <td style="text-align: center">yes</td>
+          <td style="text-align: center">3656</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">llm.c/ Java</td>
+          <td style="text-align: center">no</td>
+          <td style="text-align: center">4225</td>
+      </tr>
+  </tbody>
+</table>
+<p>The layer methods that make up the stack are ideal for parallelization because they all contain nested <code>for</code>-loops, and TornadoVM is designed to run the body of a <code>for</code>-loop in parallel on an accelerator (to make a long story short).</p>
+<h2 id="tornadovm-with-a-single-task-graph">TornadoVM with a single task graph</h2>
+<p>The plan was to put the whole stack of layer methods into a single task graph. TornadoVM would then arrange for the tasks in the graph to be executed one by one with parallelized <code>for</code>-loops on the accelerator.</p>
+<p>I defined a <code>TaskGraph</code> instance and added layer by layer using <code>.addTask</code>, with each layer defined by a <code>TaskPackage</code> instance. Before the first <code>.addTask</code> and after the last I inserted <code>.transferToDevice</code> and <code>.transferToHost</code> respectively to move data and result buffers forth and back.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// code snippet</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// the array indices passed via method parameters to the layer tasks</span>
+</span></span><span style="display:flex;"><span>TensorPointers t <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TensorPointers(params, acts, B, T, C, NH);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// the input block</span>
+</span></span><span style="display:flex;"><span>encoder_forward(acts.<span style="color:#a6e22e">encoded</span>, params.<span style="color:#a6e22e">wte</span>, params.<span style="color:#a6e22e">wpe</span>, B, T, C); <span style="color:#75715e">// encoding goes into residual[0]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TaskGraph gpt2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TaskGraph(<span style="color:#e6db74">&#34;gpt2&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// transfer buffers to accelerator</span>
+</span></span><span style="display:flex;"><span>gpt2.<span style="color:#a6e22e">transferToDevice</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, params_memory, acts_memory);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// control variable `l´ counts the transformer blocks</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> l <span style="color:#f92672">=</span> 0 ; l <span style="color:#f92672">&lt;</span> L ; l<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// update layer indices in `t´ for this iteration</span>
+</span></span><span style="display:flex;"><span>    t.<span style="color:#a6e22e">updateForLayer</span>(l);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// add layer tasks of transformer block</span>
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;ln1&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::layernorm_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">ln1</span>, t.<span style="color:#a6e22e">ln1_mean</span>, t.<span style="color:#a6e22e">ln1_rstd</span>, t.<span style="color:#a6e22e">residual</span>, t.<span style="color:#a6e22e">ln1w</span>, t.<span style="color:#a6e22e">ln1b</span>, B, T, C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;mm1&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::matmul_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">qkv</span>, t.<span style="color:#a6e22e">ln1</span>, t.<span style="color:#a6e22e">qkvw</span>, t.<span style="color:#a6e22e">qkvb</span>, B, T, C, 3 <span style="color:#f92672">*</span> C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;at&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::attention_forward, acts_memory, t.<span style="color:#a6e22e">atty</span>, t.<span style="color:#a6e22e">preatt</span>, t.<span style="color:#a6e22e">att</span>, t.<span style="color:#a6e22e">qkv</span>, B, T, C, NH));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;mm2&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::matmul_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">attproj</span>, t.<span style="color:#a6e22e">atty</span>, t.<span style="color:#a6e22e">attprojw</span>, t.<span style="color:#a6e22e">attprojb</span>, B, T, C, C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;rs1&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::residual_forward, acts_memory, t.<span style="color:#a6e22e">residual2</span>, t.<span style="color:#a6e22e">residual</span>, t.<span style="color:#a6e22e">attproj</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;ln2&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::layernorm_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">ln2</span>, t.<span style="color:#a6e22e">ln2_mean</span>, t.<span style="color:#a6e22e">ln2_rstd</span>, t.<span style="color:#a6e22e">residual2</span>, t.<span style="color:#a6e22e">ln2w</span>, t.<span style="color:#a6e22e">ln2b</span>, B, T, C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;mm3&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::matmul_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">fch</span>, t.<span style="color:#a6e22e">ln2</span>, t.<span style="color:#a6e22e">fcw</span>, t.<span style="color:#a6e22e">fcb</span>, B, T, C, 4 <span style="color:#f92672">*</span> C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;ge&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::gelu_forward, acts_memory, t.<span style="color:#a6e22e">fch_gelu</span>, t.<span style="color:#a6e22e">fch</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> 4 <span style="color:#f92672">*</span> C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;mm4&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::matmul_forward, params_memory, acts_memory, t.<span style="color:#a6e22e">fcproj</span>, t.<span style="color:#a6e22e">fch_gelu</span>, t.<span style="color:#a6e22e">fcprojw</span>, t.<span style="color:#a6e22e">fcprojb</span>, B, T, 4 <span style="color:#f92672">*</span> C, C));
+</span></span><span style="display:flex;"><span>    gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;rs2&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-l&#34;</span> <span style="color:#f92672">+</span> l, GPT2::residual_forward, acts_memory, t.<span style="color:#a6e22e">residual3</span>, t.<span style="color:#a6e22e">residual2</span>, t.<span style="color:#a6e22e">fcproj</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C));
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// add tasks of final output block</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> residual <span style="color:#f92672">=</span> acts.<span style="color:#a6e22e">residual3</span> <span style="color:#f92672">+</span> (L <span style="color:#f92672">-</span> 1) <span style="color:#f92672">*</span> B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C; <span style="color:#75715e">// last residual is in residual3</span>
+</span></span><span style="display:flex;"><span>gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;ln&#34;</span>, GPT2::layernorm_forward, params_memory, acts_memory, acts.<span style="color:#a6e22e">lnf</span>, acts.<span style="color:#a6e22e">lnf_mean</span>, acts.<span style="color:#a6e22e">lnf_rstd</span>, residual, params.<span style="color:#a6e22e">lnfw</span>, params.<span style="color:#a6e22e">lnfb</span>, B, T, C));
+</span></span><span style="display:flex;"><span>gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;mm&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, acts.<span style="color:#a6e22e">logits</span>, acts.<span style="color:#a6e22e">lnf</span>, params.<span style="color:#a6e22e">wte</span>, <span style="color:#f92672">-</span>1, B, T, C, Vp));
+</span></span><span style="display:flex;"><span>gpt2.<span style="color:#a6e22e">addTask</span>(<span style="color:#66d9ef">new</span> TaskPackage(<span style="color:#e6db74">&#34;sm&#34;</span>, GPT2::softmax_forward, acts_memory, acts.<span style="color:#a6e22e">probs</span>, acts.<span style="color:#a6e22e">logits</span>, B, T, V, Vp));
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// retrieve result buffer from accelerator</span>
+</span></span><span style="display:flex;"><span>gpt2.<span style="color:#a6e22e">transferToHost</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, acts_memory);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// execute the full GPT-2 stack in TaskGraph `gpt2´</span>
+</span></span><span style="display:flex;"><span>TornadoExecutionPlan gpt2_runner <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TornadoExecutionPlan(gpt2.<span style="color:#a6e22e">snapshot</span>());
+</span></span><span style="display:flex;"><span>gpt2_runner.<span style="color:#a6e22e">execute</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span> { gpt2_runner.<span style="color:#a6e22e">close</span>(); } <span style="color:#66d9ef">catch</span> (TornadoExecutionPlanException e) { <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> UnexpectedException(<span style="color:#66d9ef">null</span>); }
+</span></span></code></pre></div><p>It seemed that 12 transformer blocks, with 10 layers each, plus 1 input and 3 output layers was too much, as TornadoVM was showing errors that essentially said two internal arrays are too small (see issues <a href="https://github.com/otabuzzman/llm.java/issues/1">#1</a> and <a href="https://github.com/otabuzzman/llm.java/issues/2">#2</a>). By experimentally rebuilding TornadoVM with increased array sizes, the task graph was executed, but now the stack produced incorrect results.</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Version</th>
+          <th style="text-align: center">Vector API <br />
+ enabled</th>
+          <th style="text-align: center">forward <br />
+ pass (ms)</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">single TaskGraph</td>
+          <td style="text-align: center">n/ a</td>
+          <td style="text-align: center">49729</td>
+      </tr>
+  </tbody>
+</table>
+<p>The single task graph implementation was also quite slow (see issue <a href="https://github.com/otabuzzman/llm.java/issues/3">#3</a>, which was probably due to resource limitations. It&rsquo;s in the <a href="https://github.com/otabuzzman/llm.java/tree/tornado-single-tg/src/com/otabuzzman/llmj/GPT2.java"><code>tornado-single-tg</code> branch</a> of the llm.java repo.</p>
+<p>The positive thing is that I had now made all the code changes required for TornadoVM, namely</p>
+<ol>
+<li>replaced the Java Math API with the TornadoMath API,</li>
+<li>replaced Java Buffers for <code>int</code>s and <code>float</code>s by those that TornadoVM can move between host and accelerator (e.g. replaced <code>IntBuffer</code> (Java) with <code>IntArray</code> (TornadoVM)),</li>
+<li>annotated <code>for</code>-loops inside the layer methods to be parallelized by TornadoVM,</li>
+<li>added appropriate TornadoVM buffers to the signatures of the layer methods,</li>
+<li>code changes to execute the task graph instead of individual layer methods.</li>
+</ol>
+<h2 id="tornadovm-with-multiple-task-graphs">TornadoVM with multiple task graphs</h2>
+<p>I set up another configuration that allows a seamless mix of original layer methods and TornadoVM tasks and let me proceed layer by layer and fix errors as they occur.</p>
+<p>I defined a task graph for a single transformer block before iterating over the stack of blocks. At first the task graph would contain only the task for the first layer method in a transformer block. Each iteration would then run the partial block in the task graph followed by the original layer methods for remaining tasks.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Java" data-lang="Java"><span style="display:flex;"><span><span style="color:#75715e">// code snippet</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// the array indices in `ind´ are passed to the accelerator via memeory transfer</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// and accessed by the layer tasks via indices.</span>
+</span></span><span style="display:flex;"><span>TensorIndices ind <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TensorIndices(params, acts, B, T, C, NH);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// task graph of a single transformer block</span>
+</span></span><span style="display:flex;"><span>TaskGraph transformer_block <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TaskGraph(<span style="color:#e6db74">&#34;tb&#34;</span>)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">transferToDevice</span>(DataTransferMode.<span style="color:#a6e22e">FIRST_EXECUTION</span>, params_memory, acts_memory)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">transferToDevice</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, ind.<span style="color:#a6e22e">tensors</span>)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;ln1&#34;</span>, GPT2::layernorm_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">ln1</span>, ind.<span style="color:#a6e22e">ln1_mean</span>, ind.<span style="color:#a6e22e">ln1_rstd</span>, ind.<span style="color:#a6e22e">residual</span>, ind.<span style="color:#a6e22e">ln1w</span>, ind.<span style="color:#a6e22e">ln1b</span>, B, T, C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;mm1&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">qkv</span>, ind.<span style="color:#a6e22e">ln1</span>, ind.<span style="color:#a6e22e">qkvw</span>, ind.<span style="color:#a6e22e">qkvb</span>, B, T, C, 3 <span style="color:#f92672">*</span> C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;at&#34;</span>, GPT2::attention_forward, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">atty</span>, ind.<span style="color:#a6e22e">preatt</span>, ind.<span style="color:#a6e22e">att</span>, ind.<span style="color:#a6e22e">qkv</span>, B, T, C, NH)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;mm2&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">attproj</span>, ind.<span style="color:#a6e22e">atty</span>, ind.<span style="color:#a6e22e">attprojw</span>, ind.<span style="color:#a6e22e">attprojb</span>, B, T, C, C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;rs1&#34;</span>, GPT2::residual_forward, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">residual2</span>, ind.<span style="color:#a6e22e">residual</span>, ind.<span style="color:#a6e22e">attproj</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;ln2&#34;</span>, GPT2::layernorm_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">ln2</span>, ind.<span style="color:#a6e22e">ln2_mean</span>, ind.<span style="color:#a6e22e">ln2_rstd</span>, ind.<span style="color:#a6e22e">residual2</span>, ind.<span style="color:#a6e22e">ln2w</span>, ind.<span style="color:#a6e22e">ln2b</span>, B, T, C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;mm3&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">fch</span>, ind.<span style="color:#a6e22e">ln2</span>, ind.<span style="color:#a6e22e">fcw</span>, ind.<span style="color:#a6e22e">fcb</span>, B, T, C, 4 <span style="color:#f92672">*</span> C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;ge&#34;</span>, GPT2::gelu_forward, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">fch_gelu</span>, ind.<span style="color:#a6e22e">fch</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> 4 <span style="color:#f92672">*</span> C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;mm4&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">fcproj</span>, ind.<span style="color:#a6e22e">fch_gelu</span>, ind.<span style="color:#a6e22e">fcprojw</span>, ind.<span style="color:#a6e22e">fcprojb</span>, B, T, 4 <span style="color:#f92672">*</span> C, C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;rs2&#34;</span>, GPT2::residual_forward, acts_memory, ind.<span style="color:#a6e22e">tensors</span>, ind.<span style="color:#a6e22e">residual3</span>, ind.<span style="color:#a6e22e">residual2</span>, ind.<span style="color:#a6e22e">fcproj</span>, B <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">transferToHost</span>(DataTransferMode.<span style="color:#a6e22e">UNDER_DEMAND</span>, acts_memory);
+</span></span><span style="display:flex;"><span>TornadoExecutionPlan transformer_runner <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TornadoExecutionPlan(transformer_block.<span style="color:#a6e22e">snapshot</span>());
+</span></span><span style="display:flex;"><span>TornadoExecutionResult transformer_result <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// the input block</span>
+</span></span><span style="display:flex;"><span>encoder_forward(acts.<span style="color:#a6e22e">encoded</span>, params.<span style="color:#a6e22e">wte</span>, params.<span style="color:#a6e22e">wpe</span>, B, T, C); <span style="color:#75715e">// encoding goes into residual[0]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// control variable `l´ counts the transformer blocks</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> l <span style="color:#f92672">=</span> 0 ; l <span style="color:#f92672">&lt;</span> L ; l<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// update layer indices in `ind.tensors´ for this iteration</span>
+</span></span><span style="display:flex;"><span>    ind.<span style="color:#a6e22e">updateForLayer</span>(l);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// execute this transformer block&#39;s Task graph `tb´</span>
+</span></span><span style="display:flex;"><span>    transformer_result <span style="color:#f92672">=</span> transformer_runner.<span style="color:#a6e22e">execute</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// transfer results from accelerator to host after all blocks have benn executed</span>
+</span></span><span style="display:flex;"><span>transformer_result.<span style="color:#a6e22e">transferToHost</span>(acts_memory);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// define and run the output block&#39;s task graph</span>
+</span></span><span style="display:flex;"><span>TaskGraph output_layer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TaskGraph(<span style="color:#e6db74">&#34;ol&#34;</span>)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">transferToDevice</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, params_memory, acts_memory) <span style="color:#75715e">// only one execution here</span>
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;ln&#34;</span>, GPT2::layernorm_forward, params_memory, acts_memory, acts.<span style="color:#a6e22e">lnf</span>, acts.<span style="color:#a6e22e">lnf_mean</span>, acts.<span style="color:#a6e22e">lnf_rstd</span>, residual, params.<span style="color:#a6e22e">lnfw</span>, params.<span style="color:#a6e22e">lnfb</span>, B, T, C)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;mm&#34;</span>, GPT2::matmul_forward, params_memory, acts_memory, acts.<span style="color:#a6e22e">logits</span>, acts.<span style="color:#a6e22e">lnf</span>, params.<span style="color:#a6e22e">wte</span>, <span style="color:#f92672">-</span>1, B, T, C, Vp)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">task</span>(<span style="color:#e6db74">&#34;sm&#34;</span>, GPT2::softmax_forward, acts_memory, acts.<span style="color:#a6e22e">probs</span>, acts.<span style="color:#a6e22e">logits</span>, B, T, V, Vp)
+</span></span><span style="display:flex;"><span>.<span style="color:#a6e22e">transferToHost</span>(DataTransferMode.<span style="color:#a6e22e">EVERY_EXECUTION</span>, acts_memory);
+</span></span><span style="display:flex;"><span>TornadoExecutionPlan output_runner <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TornadoExecutionPlan(output_layer.<span style="color:#a6e22e">snapshot</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>output_runner.<span style="color:#a6e22e">execute</span>();
+</span></span></code></pre></div><p>The layer methods receive array indices via method parameters which reflect the current layer. The original code updates these indices as it iterates layer by layer over the transformer blocks. For the now predefined transformer block, its (now as well predefined) parameters must therefore  become indices pointing to the actual (real) indices, the latter updated with each iteration (just as the original code did). This additional level of indirection requires another buffer <code>ind.tensors</code> to be transferred before each task graph execution.</p>
+<p>This approach eventually worked and let me execute the full stack on accelerators with TornadoVM. It&rsquo;s in the <a href="https://github.com/otabuzzman/llm.java/blob/tornado-multi-tg/src/com/otabuzzman/llmj/GPT2.java"><code>tornado-multi-tg</code> branch</a> of the llm.java repo.</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Version</th>
+          <th style="text-align: center">Backend</th>
+          <th style="text-align: center">forward pass <br />
+ duration (ms)</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">multiple TaskGraph</td>
+          <td style="text-align: center">PTX</td>
+          <td style="text-align: center">2353</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">multiple TaskGraph</td>
+          <td style="text-align: center">OpenCL</td>
+          <td style="text-align: center">2511</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">multiple TaskGraph</td>
+          <td style="text-align: center">SPIR-V</td>
+          <td style="text-align: center">6701</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="findings">Findings</h2>
+<ol>
+<li>The matmul task for matrix multiplication yields a runtime error depending on the code structure. Could be fixed by moving parts of code around (trial and error).</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">matmul_forward</span>(FloatArray params, FloatArray acts, IntArray pointers, <span style="color:#66d9ef">int</span> out, <span style="color:#66d9ef">int</span> inp, intweight, <span style="color:#66d9ef">int</span> bias, <span style="color:#66d9ef">int</span> B, <span style="color:#66d9ef">int</span> T, <span style="color:#66d9ef">int</span> C, <span style="color:#66d9ef">int</span> OC) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> b <span style="color:#f92672">=</span> 0 ; b <span style="color:#f92672">&lt;</span> B ; b<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> t <span style="color:#f92672">=</span> 0 ; t <span style="color:#f92672">&lt;</span> T ; t<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">int</span> bt <span style="color:#f92672">=</span> b <span style="color:#f92672">*</span> T <span style="color:#f92672">+</span> t;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> o <span style="color:#f92672">=</span> 0 ; o <span style="color:#f92672">&lt;</span> OC ; o<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// ERROR : clBuildProgram -&gt; Returned: -11</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// &#39;}&#39; mismatch, moved code behind for-loop</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// int _bias = pointers.get(bias);</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// float val += (_bias != -1) ? params.get(_bias + o) : 0.0f;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">float</span> val <span style="color:#f92672">=</span> 0.<span style="color:#a6e22e">0f</span>;
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0 ; i <span style="color:#f92672">&lt;</span> C ; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                    val <span style="color:#f92672">+=</span> acts.<span style="color:#a6e22e">get</span>(pointers.<span style="color:#a6e22e">get</span>(inp) <span style="color:#f92672">+</span> bt <span style="color:#f92672">*</span> C <span style="color:#f92672">+</span> i) <span style="color:#f92672">*</span> params.<span style="color:#a6e22e">get</span>(pointers.<span style="color:#a6e22e">get</span>(weight) <span style="color:#f92672">+</span> o <span style="color:#f92672">*</span> C <span style="color:#f92672">+</span> i);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> _bias <span style="color:#f92672">=</span> pointers.<span style="color:#a6e22e">get</span>(bias);
+</span></span><span style="display:flex;"><span>                val <span style="color:#f92672">+=</span> (_bias <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span>1) <span style="color:#f92672">?</span> params.<span style="color:#a6e22e">get</span>(_bias <span style="color:#f92672">+</span> o) : 0.<span style="color:#a6e22e">0f</span>;
+</span></span><span style="display:flex;"><span>                acts.<span style="color:#a6e22e">set</span>(pointers.<span style="color:#a6e22e">get</span>(out) <span style="color:#f92672">+</span> bt <span style="color:#f92672">*</span> OC <span style="color:#f92672">+</span> o, val);
+</span></span><span style="display:flex;"><span>    }}}}
+</span></span></code></pre></div><ol start="2">
+<li>
+<p>The inner <code>for</code>-loop in the attention task (not the annotated parallelized loops) ends early when the termination condition references a control variable of one of the surrounding parallelized <code>for</code>-loops. The generated kernel shows a wrong block sequence that lets it terminate immediately after entering the respective <code>for</code>-loop. Could be fixed by changing the termination logic for the respective inner <code>for</code>-loop. A message from TornadoVM&rsquo;s option <code>tornado.parallelise.auto=true</code> for automatic parallelization (which I happened to try when I was running out of reasonable ideas) pointed me in the right direction: it said that it doesn&rsquo;t support loop dependencies.</p>
+</li>
+<li>
+<p>The attention task yields a runtime error depending on a combination of code structure and backend. The SPIR-V backend works with a condition check at the beginning of an inner <code>for</code>-loop, whereas the OpenCL backend needs the check at the end of the loop. Could be fixed by using the PTX backend which works in both cases.</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">attention_forward</span>(FloatArray acts, IntArray pointers, <span style="color:#66d9ef">int</span> out, <span style="color:#66d9ef">int</span> preatt, <span style="color:#66d9ef">int</span> att, <span style="color:#66d9ef">int</span> inp, <span style="color:#66d9ef">int</span> B, <span style="color:#66d9ef">int</span> T, <span style="color:#66d9ef">int</span> C, <span style="color:#66d9ef">int</span> NH) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> C3 <span style="color:#f92672">=</span> C <span style="color:#f92672">*</span> 3;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> hs <span style="color:#f92672">=</span> C <span style="color:#f92672">/</span> NH; <span style="color:#75715e">// head size</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> scale <span style="color:#f92672">=</span> 1.<span style="color:#a6e22e">0f</span> <span style="color:#f92672">/</span> TornadoMath.<span style="color:#a6e22e">sqrt</span>(hs);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> _inp <span style="color:#f92672">=</span> pointers.<span style="color:#a6e22e">get</span>(inp);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> b <span style="color:#f92672">=</span> 0; b <span style="color:#f92672">&lt;</span> B; b<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> t <span style="color:#f92672">=</span> 0; t <span style="color:#f92672">&lt;</span> T; t<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">@Parallel</span> <span style="color:#66d9ef">int</span> h <span style="color:#f92672">=</span> 0; h <span style="color:#f92672">&lt;</span> NH; h<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> query_t <span style="color:#f92672">=</span> _inp <span style="color:#f92672">+</span> b <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C3 <span style="color:#f92672">+</span> t <span style="color:#f92672">*</span> C3 <span style="color:#f92672">+</span> h <span style="color:#f92672">*</span> hs;
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> preatt_bth <span style="color:#f92672">=</span> pointers.<span style="color:#a6e22e">get</span>(preatt) <span style="color:#f92672">+</span> b <span style="color:#f92672">*</span> NH <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> T <span style="color:#f92672">+</span> h <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> T <span style="color:#f92672">+</span> t <span style="color:#f92672">*</span> T;
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> att_bth <span style="color:#f92672">=</span> pointers.<span style="color:#a6e22e">get</span>(att) <span style="color:#f92672">+</span> b <span style="color:#f92672">*</span> NH <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> T <span style="color:#f92672">+</span> h <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> T <span style="color:#f92672">+</span> t <span style="color:#f92672">*</span> T;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">float</span> maxval <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>10000.<span style="color:#a6e22e">0f</span>; <span style="color:#75715e">// TODO something better</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// ERROR with variabl `t´instead of `T´</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> t2 <span style="color:#f92672">=</span> 0; t2 <span style="color:#f92672">&lt;</span> T; t2<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// SPIR-V, PTX backends ok</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// if (t2 &gt; t) continue; // avoid ERROR by looping if termination criterion is met</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">int</span> key_t2 <span style="color:#f92672">=</span> _inp <span style="color:#f92672">+</span> b <span style="color:#f92672">*</span> T <span style="color:#f92672">*</span> C3 <span style="color:#f92672">+</span> t2 <span style="color:#f92672">*</span> C3 <span style="color:#f92672">+</span> h <span style="color:#f92672">*</span> hs <span style="color:#f92672">+</span> C; <span style="color:#75715e">// +C because it&#39;s key</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// (query_t) dot (key_t2)</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">float</span> val <span style="color:#f92672">=</span> 0.<span style="color:#a6e22e">0f</span>;
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0; i <span style="color:#f92672">&lt;</span> hs; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                        val <span style="color:#f92672">+=</span> acts.<span style="color:#a6e22e">get</span>(query_t <span style="color:#f92672">+</span> i) <span style="color:#f92672">*</span> acts.<span style="color:#a6e22e">get</span>(key_t2 <span style="color:#f92672">+</span> i);
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                    val <span style="color:#f92672">*=</span> scale;
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> (val <span style="color:#f92672">&gt;</span> maxval) {
+</span></span><span style="display:flex;"><span>                        maxval <span style="color:#f92672">=</span> val;
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// OpenCL, PTX backends ok</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> (t2 <span style="color:#f92672">&gt;</span> t) <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>                    acts.<span style="color:#a6e22e">set</span>(preatt_bth <span style="color:#f92672">+</span> t2, val); <span style="color:#75715e">// avoid ERROR by looping if termination criterion is met</span>
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// ...</span>
+</span></span><span style="display:flex;"><span>    }}}}
+</span></span></code></pre></div><ol start="4">
+<li>Using break in a <code>for</code>-loop inside a task yields runtime error. Could be fixed by refactoring program logic.</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>This was my 2nd project to refactor a codebase to implement TornadoVM. The logic was more complex this time, but it was still no problem to use the TornadoVM APIs.</p>
+<p>The measures show that TornadoVM sped up the plain C implementation by about 35 percent in my particular setup. The model I used has 117 million parameters, which is quite small compared to the billions of common models. Larger models may produce better results as they require more processing power.</p>
+<p>Playing around with the code structure of the task methods to get TornadoVM to render proper kernels was challenging, but also fun – and that’s what counts&hellip;</p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/cuda/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">CUDA</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/parallelcomputing/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Parallelcomputing</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/java/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Java</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/llm/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">LLM</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+  <div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+    <p class="f5 b mb3">Related</p>
+    <ul class="pa0 list">
+	   
+	     <li  class="mb2">
+          <a href="/posts/tornado-java-3/">Parallel Java with TornadoVM (3)</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/tornado-java-2/">Parallel Java with TornadoVM (2)</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/parallel-java/">Parallel Java with CUDA</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/tornado-java-1/">Parallel Java with TornadoVM</a>
+        </li>
+	    
+    </ul>
+</div>
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  otabuzzman's blog 2025 
+  </a>
+    <div><div class="ananke-socials"><a href="https://github.com/otabuzzman/" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition github link dib z-999 pt3 pt0-l mr1"
+        title="follow on GitHub - Opens in a new window"
+        aria-label="follow on GitHub - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="https://x.com/otabuzzman" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition x-twitter link dib z-999 pt3 pt0-l mr1"
+        title="follow on X - Opens in a new window"
+        aria-label="follow on X - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a><a href="http://linkedin.com/in/juergenschuck" target="_blank" rel="noopener"
+        class="ananke-social-link link-transition linkedin link dib z-999 pt3 pt0-l mr1"
+        title="follow on LinkedIn - Opens in a new window"
+        aria-label="follow on LinkedIn - Opens in a new window">
+      <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+            
+          </span>
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
+</svg>
+</span>
+</a></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

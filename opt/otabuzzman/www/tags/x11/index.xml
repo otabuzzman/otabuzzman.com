@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>X11 on otabuzzman&#39;s blog</title>
+    <link>http://localhost:1313/tags/x11/</link>
+    <description>Recent content in X11 on otabuzzman&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 09 May 2022 19:35:12 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/x11/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Run X11 Clients on Tablet</title>
+      <link>http://localhost:1313/posts/x11-on-tablet/</link>
+      <pubDate>Mon, 09 May 2022 19:35:12 +0200</pubDate>
+      <guid>http://localhost:1313/posts/x11-on-tablet/</guid>
+      <description>&lt;p&gt;A friend of mine recently told me about porting a VNC server to a microcontroller. We joked about it and I capped it off by saying I&amp;rsquo;ve been thinking about porting X11 to iOS. I ended up using VNC instead, but my buddy said there would probably already be an X11 port for iOS - and he was right. Mocha X11 is an X server implementation for tablets. It is available in the App and Play Stores. There are lite versions with a session interval of five minutes. Too short for serious work, but enough to get a taste of what it&amp;rsquo;s like to see decades-old software meet modern devices.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

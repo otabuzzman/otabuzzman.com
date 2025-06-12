@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Metal on otabuzzman&#39;s blog</title>
+    <link>http://localhost:1313/tags/metal/</link>
+    <description>Recent content in Metal on otabuzzman&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 12 Jan 2025 19:44:21 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/metal/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Metal parallelization of llm.c</title>
+      <link>http://localhost:1313/posts/metal-llmswift/</link>
+      <pubDate>Sun, 12 Jan 2025 19:44:21 +0100</pubDate>
+      <guid>http://localhost:1313/posts/metal-llmswift/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://developer.apple.com/metal/&#34;&gt;Metal&lt;/a&gt; is Apple&amp;rsquo;s low-level API for GPU programming and &lt;a href=&#34;https://github.com/karpathy/llm.c&#34;&gt;llm.c&lt;/a&gt; is Andrej Karpathy&amp;rsquo;s plain C and CUDA implementation of GPT-2. The C version leverages &lt;a href=&#34;https://www.openmp.org/&#34;&gt;OpenMP&lt;/a&gt; to parallelize the layer functions on the CPU cores. The CUDA version is highly optimized for multi-node multi-accelerator parallelization on NVIDIA GPUs using &lt;a href=&#34;https://www.open-mpi.org/&#34;&gt;Open MPI&lt;/a&gt; and &lt;a href=&#34;https://developer.nvidia.com/nccl&#34;&gt;NCCL&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;I once ported the C version to Swift and used &lt;a href=&#34;https://developer.apple.com/documentation/DISPATCH&#34;&gt;Grand Central Dispatch&lt;/a&gt; (GCD) for CPU parallelization. The Xcode project is in &lt;a href=&#34;https://github.com/otabuzzman/llm.swift&#34;&gt;llm.swift&lt;/a&gt;. Despite using the &lt;code&gt;-Ounchecked&lt;/code&gt; Swift compiler option to generate fast code without bounds checks the C version compiled with &lt;code&gt;clang&lt;/code&gt; runs about 6 times faster than Swift.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
